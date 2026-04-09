@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { detectConflicts, SEVERITY_CONFIG, TYPE_LABELS } from '../lib/conflictRules'
 import { useGeminiAnalysis, type SkinAnalysisInput } from '../lib/geminiAnalysis'
-
+ 
 
 // ── Animação de pulse para loading ───────────────────────────────────────
 const PULSE_STYLE = `
