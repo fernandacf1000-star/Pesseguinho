@@ -88,7 +88,6 @@ function ConflictCard({ conflict }: { conflict: ReturnType<typeof detectConflict
         </div>
       )}
     </div>
-      </div>
   )
 }
 
