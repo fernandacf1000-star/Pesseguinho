@@ -1,320 +1,295 @@
-import { useState, useEffect } from 'react'
-import { ActiveMascot, PesseguinhoManha } from '../components/Mascots'
-import {
-  useActiveRoutine,
-  useTodayLog,
-  useCreateLog,
-  useToggleLogItem,
-  useDaysSinceLastPhoto,
-} from '../hooks/useRotina'
+import { useState } from "react";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  Limpeza: '🧴',
-  Tratamento: '🎯',
-  'Tratamento Forte': '⭐',
-  Hidratação: '💧',
-  Proteção: '🛡️',
+// ── Configuração de Cores e Estilo ────────────────────────────────────────
+const C = {
+  bg: "#FFFBF5",
+  peach: "#FFCBAD",
+  deepPeach: "#FF8C61",
+  green: "#9DC08B",
+  rose: "#F28C8C",
+  text: "#2D3436",
+  muted: "#A89D98",
+  card: "#FFFFFF",
+  border: "#FFE5D4",
+};
+
+// ── SVG silhueta de costas ────────────────────────────────────────────────
+function IconCostas({ size = 20, color = "#A89D98" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transition: "all 0.2s ease", display: "block" }}>
+      <path d="M6 19V12C6 9 8 7 12 7C16 7 18 9 18 12V19H6Z" fill={color} opacity="0.1" />
+      <path d="M6 19V12C6 9 8 7 12 7C16 7 18 9 18 12V19" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 4.5C10 4.5 10 7 12 7C14 7 14 4.5 14 4.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M9.5 11C9.5 11 10.5 11.5 11 13" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M14.5 11C14.5 11 13.5 11.5 13 13" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <line x1="12" y1="13.5" x2="12" y2="18.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
 }
 
-// Detecta período pelo horário
-function getCurrentPeriod(): 'manha' | 'noite' {
-  const h = new Date().getHours()
-  return h >= 5 && h < 18 ? 'manha' : 'noite'
+// ── SVG silhueta de colo (pescoço/decote) ────────────────────────────────
+function IconColo({ size = 20, color = "#A89D98" }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ transition: "all 0.2s ease", display: "block" }}>
+      <path d="M6 19V12C6 9 8 7 12 7C16 7 18 9 18 12V19H6Z" fill={color} opacity="0.1" />
+      <path d="M6 19V12C6 9 8 7 12 7C16 7 18 9 18 12V19" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M10 4.5C10 4.5 10 7 12 7C14 7 14 4.5 14 4.5" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M7.5 9.5 Q 9.5 11 11.5 10.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M16.5 9.5 Q 14.5 11 12.5 10.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+      <path d="M12 12.5 V 16.5" stroke={color} strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
 }
 
-// Dia da semana atual (0=dom)
-function getTodayDow() {
-  return new Date().getDay()
-}
-
-export default function Rotina() {
-  const period = getCurrentPeriod()
-  const todayDow = getTodayDow()
-  const daysSincePhoto = useDaysSinceLastPhoto()
-  const showPhotoAlert = daysSincePhoto !== null && daysSincePhoto >= 15
-
-  const { data: routineData, isLoading: loadingRoutine } = useActiveRoutine(period)
-  const routineId = routineData?.routine.id
-  const { data: todayLog, isLoading: loadingLog } = useTodayLog(routineId)
-
-  const createLog = useCreateLog()
-  const toggleItem = useToggleLogItem()
-
-  // Filtra produtos para hoje
-  const todayItems = (routineData?.items ?? []).filter(
-    (item) => item.day_of_week.length === 0 || item.day_of_week.includes(todayDow)
-  )
-
-  // Garante que o log do dia existe ao carregar
-  useEffect(() => {
-    if (!routineId || loadingLog || todayLog) return
-    createLog.mutate({
-      routineId,
-      productIds: todayItems.map((i) => i.product_id),
-    })
-  }, [routineId, loadingLog, todayLog])
-
-  const logItems = todayLog?.usage_log_items ?? []
-  const totalRequired = todayItems.filter((i) => !i.is_optional).length
-  const totalChecked = logItems.filter((i) => i.checked).length
-  const allDone = totalChecked >= totalRequired
-
-  function handleToggle(productId: string) {
-    if (!todayLog) return
-    const logItem = logItems.find((li) => li.product_id === productId)
-    if (!logItem) return
-    toggleItem.mutate({
-      logItemId: logItem.id,
-      checked: !logItem.checked,
-      logId: todayLog.id,
-      routineId: routineId!,
-    })
-  }
-
-  const greeting =
-    period === 'manha'
-      ? 'Bom dia! Pronta para o glow? ☀️'
-      : 'Hora do tratamento noturno ✨'
-
-  const dayLabel = routineData?.routine.name ?? '...'
-
-  if (loadingRoutine) {
+// ── Ícone de área dinâmico ────────────────────────────────────────────────
+function AreaIcon({ area, size = 20, active = false }) {
+  const color = active ? "#FFFFFF" : C.muted;
+  if (area.id === "costas") {
     return (
-      <div style={styles.centered}>
-        <ActiveMascot period={period} showPhotoAlert={false} size={64} />
-        <p style={{ color: '#A89D98', marginTop: 12, fontFamily: "'Outfit',sans-serif" }}>
-          Carregando rotina...
-        </p>
+      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <IconCostas size={size} color={color} />
       </div>
-    )
+    );
   }
+  return (
+    <span style={{
+      fontSize: size, width: size, height: size,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      lineHeight: 1,
+      filter: active ? "none" : "grayscale(100%) opacity(0.6)",
+      transition: "all 0.2s",
+    }}>
+      {area.emoji}
+    </span>
+  );
+}
 
-  if (!routineData) {
-    return (
-      <div style={styles.centered}>
-        <p style={{ color: '#A89D98', fontFamily: "'Outfit',sans-serif", textAlign: 'center' }}>
-          Nenhuma rotina cadastrada para este período.
-          <br />Adicione uma em "Produtos".
-        </p>
-      </div>
-    )
-  }
+// ── Dados ─────────────────────────────────────────────────────────────────
+const AREAS = [
+  { id: "rosto",  label: "Rosto",  emoji: "🧖‍♀️", active: true },
+  { id: "colo",   label: "Colo",   emoji: null,   active: true },
+  { id: "pernas", label: "Pernas", emoji: "🦵",   active: true },
+  { id: "costas", label: "Costas", emoji: null,   active: true },
+  { id: "cabelo", label: "Cabelo", emoji: "💆‍♀️", active: true },
+];
+
+const PRODUCTS = {
+  rosto: [
+    { step: 1, category: "Limpeza",          name: "Gel de Limpeza Suave", brand: "La Roche-Posay"  },
+    { step: 2, category: "Tratamento",        name: "Niacinamide 10%",      brand: "The Ordinary"    },
+    { step: 3, category: "Tratamento Forte",  name: "Retinal 0.1%",         brand: "Geek & Gorgeous" },
+    { step: 4, category: "Hidratação",        name: "Hidratante Calmante",  brand: "Bioderma"        },
+  ],
+  colo: [
+    { step: 1, category: "Tratamento", name: "Sérum Copper Peptides",     brand: "Biossance" },
+    { step: 2, category: "Hidratação", name: "Creme Firmador Resveratrol", brand: "Caudalie"  },
+    { step: 3, category: "Proteção",   name: "Protetor Solar FPS 50",      brand: "Isdin"     },
+  ],
+  pernas: [
+    { step: 1, category: "Hidratação", name: "Loção Corporal",      brand: "Nivea" },
+    { step: 2, category: "Tratamento", name: "Creme Anti-celulite", brand: "Vichy" },
+  ],
+  costas: [
+    { step: 1, category: "Limpeza",    name: "Sabonete Antiacne", brand: "Benzac"     },
+    { step: 2, category: "Tratamento", name: "Creme Esfoliante",  brand: "Neutrogena" },
+  ],
+  cabelo: [
+    { step: 1, category: "Limpeza",         name: "Shampoo Baixo Poo", brand: "WNF"    },
+    { step: 2, category: "Condicionamento", name: "Máscara Nutritiva", brand: "Skala"  },
+    { step: 3, category: "Finalização",     name: "Sérum Capilar",     brand: "Aussie" },
+  ],
+};
+
+// ── Lista de produtos com barra de progresso ──────────────────────────────
+function ProductList({ areaId }) {
+  const [checked, setChecked] = useState({});
+  const products = PRODUCTS[areaId] ?? [];
+  const total = products.length;
+  const done = Object.values(checked).filter(Boolean).length;
 
   return (
-    <div style={styles.page}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* Barra de progresso */}
+      <div style={{ height: 4, background: C.border, borderRadius: 2, marginBottom: 8, overflow: "hidden" }}>
+        <div style={{
+          height: "100%",
+          width: `${total > 0 ? (done / total) * 100 : 0}%`,
+          background: C.green,
+          transition: "width 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+        }} />
+      </div>
+
+      {products.map((p) => {
+        const isChecked = checked[p.step] ?? false;
+        return (
+          <div
+            key={p.step}
+            onClick={() => setChecked((prev) => ({ ...prev, [p.step]: !isChecked }))}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              background: C.card,
+              border: `1.5px solid ${isChecked ? C.green : C.border}`,
+              borderRadius: 16, padding: "12px 16px", cursor: "pointer",
+              transition: "all 0.2s ease",
+              opacity: isChecked ? 0.7 : 1,
+              transform: isChecked ? "scale(0.98)" : "scale(1)",
+            }}
+          >
+            <div style={{
+              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+              background: isChecked ? C.green : C.peach,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, fontWeight: 800,
+              color: isChecked ? "white" : C.deepPeach,
+            }}>
+              {p.step}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                fontSize: 13, fontWeight: 700, color: C.text,
+                textDecoration: isChecked ? "line-through" : "none",
+                opacity: isChecked ? 0.5 : 1,
+              }}>
+                {p.category}
+              </div>
+              <div style={{ fontSize: 11, color: C.muted }}>
+                {p.brand} · <span style={{ fontWeight: 500 }}>{p.name}</span>
+              </div>
+            </div>
+            <div style={{
+              width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+              border: `2px solid ${isChecked ? C.green : C.border}`,
+              background: isChecked ? C.green : "transparent",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {isChecked && (
+                <svg width="10" height="10" viewBox="0 0 11 11" fill="none">
+                  <path d="M2 5.5L4.5 8L9 3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Layout 1 ──────────────────────────────────────────────────────────────
+function Layout1() {
+  const activeAreas = AREAS.filter((a) => a.active);
+  const [activeTab, setActiveTab] = useState(activeAreas[0].id);
+  const current = activeAreas.find((a) => a.id === activeTab);
+
+  return (
+    <div style={{ fontFamily: "'Outfit', sans-serif", background: C.bg, height: "100%", display: "flex", flexDirection: "column" }}>
+
       {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.mascotBounce}>
-          <ActiveMascot period={period} showPhotoAlert={showPhotoAlert} size={52} />
-        </div>
+      <div style={{ padding: "20px 20px 15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
-          <div style={styles.greetingSmall}>Olá, Fernanda!</div>
-          <div style={styles.greetingBig}>{greeting}</div>
+          <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5 }}>
+            Terça-feira
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: C.text }}>Rotina Noite</div>
+        </div>
+        {/* Mascote placeholder */}
+        <div style={{
+          width: 42, height: 42, borderRadius: "50%", background: "white",
+          border: `2px solid ${C.peach}`, display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 22, boxShadow: "0 4px 10px rgba(0,0,0,0.05)",
+        }}>
+          🍑
         </div>
       </div>
 
-      {/* Scroll area */}
-      <div style={styles.scroll}>
+      {/* Tabs em pílula */}
+      <div style={{
+        display: "flex", gap: 8, overflowX: "auto", padding: "0 20px 15px",
+        flexShrink: 0, scrollbarWidth: "none",
+      }}>
+        {activeAreas.map((area) => {
+          const isActive = area.id === activeTab;
+          return (
+            <button
+              key={area.id}
+              onClick={() => setActiveTab(area.id)}
+              style={{
+                flexShrink: 0, display: "flex", alignItems: "center", gap: 8,
+                padding: "8px 16px", borderRadius: 20,
+                border: isActive ? "none" : `1px solid ${C.border}`,
+                cursor: "pointer",
+                background: isActive ? C.deepPeach : "white",
+                boxShadow: isActive ? `0 4px 12px ${C.deepPeach}44` : "0 2px 4px rgba(0,0,0,0.02)",
+                transition: "all 0.2s ease",
+              }}
+            >
+              <AreaIcon area={area} size={16} active={isActive} />
+              <span style={{ fontSize: 12, fontWeight: 700, color: isActive ? "white" : C.text }}>
+                {area.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Alerta foto */}
-        {showPhotoAlert && (
-          <div style={styles.alertBanner}>
-            <span style={{ fontSize: 28 }}>📸</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#D97052' }}>Dia de Foto!</div>
-              <div style={{ fontSize: 12, color: '#7A6A64', marginTop: 1 }}>
-                Tire sua foto de acompanhamento ({daysSincePhoto} dias sem registro).
-              </div>
-            </div>
-            <span style={{ fontSize: 18, color: '#FF8C61' }}>→</span>
-          </div>
-        )}
+      {/* Card elevado com conteúdo */}
+      <div style={{
+        flex: 1, overflowY: "auto", padding: "24px 20px",
+        background: "white", borderTopLeftRadius: 32, borderTopRightRadius: 32,
+        boxShadow: "0 -10px 30px rgba(0,0,0,0.03)",
+        display: "flex", flexDirection: "column", alignItems: "stretch", boxSizing: "border-box",
+      }}>
+        <div style={{ marginBottom: 18, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{
+            background: `${C.peach}44`, color: C.deepPeach,
+            padding: "4px 12px", borderRadius: 10, fontSize: 11, fontWeight: 800,
+          }}>
+            {current.label.toUpperCase()}
+          </span>
+          <span style={{ fontSize: 11, color: C.muted }}>
+            {(PRODUCTS[current.id] ?? []).length} produtos
+          </span>
+        </div>
+        <ProductList areaId={current.id} />
+      </div>
+    </div>
+  );
+}
 
-        {/* Sucesso */}
-        {allDone && (
-          <div style={styles.successBanner}>
-            <PesseguinhoManha size={48} />
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#3D8B2A' }}>Rotina completa! 🎉</div>
-              <div style={{ fontSize: 12, color: '#5FAF4E' }}>Sua pele agradece. Bom descanso!</div>
-            </div>
-          </div>
-        )}
+// ── App ───────────────────────────────────────────────────────────────────
+export default function App() {
+  return (
+    <div style={{
+      fontFamily: "'Outfit', sans-serif", background: "#F0EBE3",
+      minHeight: "100vh", display: "flex", flexDirection: "column",
+      alignItems: "center", padding: "24px 16px", gap: 20,
+    }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
-        {/* Título + progress */}
-        <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#2D3436' }}>
-            {dayLabel}:{' '}
-            <span style={{ color: '#FF8C61' }}>
-              {period === 'manha' ? 'Manhã' : 'Noite'}
-            </span>
-          </div>
-          <div style={{ marginTop: 8 }}>
-            <div style={styles.progressTrack}>
-              <div
-                style={{
-                  ...styles.progressFill,
-                  width: `${(totalChecked / Math.max(todayItems.length, 1)) * 100}%`,
-                }}
-              />
-            </div>
-            <div style={{ fontSize: 11, color: '#A89D98', marginTop: 4, textAlign: 'right' }}>
-              {totalChecked}/{todayItems.length} produtos
-            </div>
-          </div>
+      <div style={{ textAlign: "center" }}>
+        <div style={{ fontSize: 24, fontWeight: 800, color: C.text }}>🍑 Pesseguinho</div>
+        <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Skin & Care Tracker</div>
+      </div>
+
+      {/* Mockup de celular */}
+      <div style={{
+        width: 360, height: 640, background: C.card, borderRadius: 40,
+        boxShadow: "0 30px 70px rgba(0,0,0,0.2), 0 0 0 12px #2D3436",
+        overflow: "hidden", display: "flex", flexDirection: "column", position: "relative",
+      }}>
+        {/* Status bar */}
+        <div style={{
+          background: C.bg, padding: "12px 24px 6px", flexShrink: 0,
+          display: "flex", justifyContent: "space-between", alignItems: "center",
+        }}>
+          <span style={{ fontSize: 12, fontWeight: 800, color: C.text }}>9:41</span>
+          <div style={{ display: "flex", gap: 6, fontSize: 12 }}>📶 🔋</div>
         </div>
 
-        {/* Lista de produtos */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {todayItems.map((item) => {
-            const product = item.catalog_products
-            if (!product) return null
-            const logItem = logItems.find((li) => li.product_id === item.product_id)
-            const isChecked = logItem?.checked ?? false
-
-            return (
-              <div
-                key={item.id}
-                onClick={() => handleToggle(item.product_id)}
-                style={{
-                  ...styles.productCard,
-                  background: isChecked ? '#F6FFF3' : 'white',
-                  borderColor: isChecked ? '#9DC08B' : '#FFE5D4',
-                  borderStyle: item.is_optional ? 'dashed' : 'solid',
-                  opacity: item.is_optional ? 0.85 : 1,
-                }}
-              >
-                {/* Ícone */}
-                <div style={{
-                  ...styles.iconWrap,
-                  background: isChecked ? '#EAF7E5' : '#FFF0E8',
-                }}>
-                  {CATEGORY_ICONS[product.category ?? ''] ?? '🧴'}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span style={{
-                      ...styles.stepBadge,
-                      color: isChecked ? '#5FAF4E' : '#FF8C61',
-                      background: isChecked ? '#EAF7E5' : '#FFF0E8',
-                    }}>
-                      P{item.sort_order}
-                    </span>
-                    <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: isChecked ? '#5FAF4E' : '#2D3436',
-                      textDecoration: isChecked ? 'line-through' : 'none',
-                    }}>
-                      {product.category}
-                    </span>
-                    {item.is_optional && (
-                      <span style={styles.optionalBadge}>opcional</span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#5A4A44', marginTop: 1 }}>
-                    {product.name}{' '}
-                    <span style={{ fontWeight: 400, color: '#A89D98' }}>({product.brand})</span>
-                  </div>
-                  {product.function_desc && (
-                    <div style={{ fontSize: 11, color: '#A89D98', marginTop: 2 }}>
-                      {product.function_desc}
-                    </div>
-                  )}
-                </div>
-
-                {/* Checkbox */}
-                <div style={{
-                  ...styles.checkCircle,
-                  background: isChecked ? '#9DC08B' : 'white',
-                  borderColor: isChecked ? '#9DC08B' : '#FFCBAD',
-                }}>
-                  {isChecked && (
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <path d="M2.5 7L5.5 10L11.5 4" stroke="white" strokeWidth="2"
-                        strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+        <div style={{ flex: 1, overflow: "hidden" }}>
+          <Layout1 />
         </div>
       </div>
     </div>
-  )
-}
-
-// ── Estilos ────────────────────────────────────────────────────────────────
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    fontFamily: "'Outfit', sans-serif",
-    backgroundColor: '#FFFBF5',
-    minHeight: '100vh',
-    maxWidth: 390,
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  centered: {
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    justifyContent: 'center', minHeight: '100vh',
-  },
-  header: {
-    padding: '52px 20px 0',
-    display: 'flex', alignItems: 'center', gap: 12,
-  },
-  mascotBounce: {
-    animation: 'bounce 2.5s ease-in-out infinite',
-  },
-  greetingSmall: { fontSize: 13, color: '#A89D98', fontWeight: 400 },
-  greetingBig: { fontSize: 17, fontWeight: 700, color: '#2D3436', lineHeight: 1.2 },
-  scroll: {
-    flex: 1, overflowY: 'auto',
-    padding: '16px 20px 100px',
-    display: 'flex', flexDirection: 'column', gap: 14,
-  },
-  alertBanner: {
-    background: 'linear-gradient(135deg, #FFF0E8, #FFE2D0)',
-    border: '1.5px solid #FFCBAD', borderRadius: 16,
-    padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10,
-    cursor: 'pointer',
-  },
-  successBanner: {
-    background: 'linear-gradient(135deg, #EAF7E5, #D5F5CA)',
-    border: '1.5px solid #9DC08B', borderRadius: 16,
-    padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
-  },
-  progressTrack: {
-    height: 6, background: '#FFE5D4', borderRadius: 99, overflow: 'hidden',
-  },
-  progressFill: {
-    height: 6, borderRadius: 99,
-    background: 'linear-gradient(90deg, #FF8C61, #FFCBAD)',
-    transition: 'width 0.5s ease',
-  },
-  productCard: {
-    border: '1.5px solid', borderRadius: 18,
-    padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 14,
-    cursor: 'pointer', transition: 'all 0.2s ease',
-  },
-  iconWrap: {
-    width: 44, height: 44, borderRadius: 14,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 20, flexShrink: 0, transition: 'background 0.2s',
-  },
-  stepBadge: {
-    fontSize: 10, fontWeight: 700, borderRadius: 6, padding: '2px 6px',
-    minWidth: 28, textAlign: 'center',
-  },
-  optionalBadge: {
-    fontSize: 10, color: '#A89D98', background: '#F5F0EC',
-    borderRadius: 6, padding: '1px 6px',
-  },
-  checkCircle: {
-    width: 26, height: 26, borderRadius: '50%', border: '2px solid',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0, marginLeft: 'auto', transition: 'all 0.2s ease',
-  },
+  );
 }
