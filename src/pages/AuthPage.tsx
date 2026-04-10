@@ -75,23 +75,36 @@ export default function AuthPage() {
         .auth-btn:active { transform: scale(0.98); }
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
+          50% { transform: translateY(-12px); }
         }
-        .mascot-float { animation: float 3s ease-in-out infinite; }
+        .mascot-float {
+          animation: float 3.5s ease-in-out infinite;
+        }
       `}</style>
 
-      <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div className="mascot-float" style={{ margin: '0 auto 16px', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <div className="mascot-float" style={{ marginBottom: 8 }}>
           <img
             src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/IMG_1192.png"
             alt="Pesseguinho"
-            width={126}
-            height={126}
-            style={{ objectFit: 'contain' }}
+            style={{
+              width: 160,
+              height: 160,
+              objectFit: 'contain',
+              mixBlendMode: 'multiply',
+              display: 'block',
+              margin: '0 auto',
+            }}
           />
         </div>
-        <div style={{ fontSize: 24, fontWeight: 700, color: C.text }}>Pesseguinho</div>
-        <div style={{ fontSize: 12, color: C.deepPeach, marginTop: 4, fontStyle: 'italic' }}>
+        <div style={{ fontSize: 26, fontWeight: 700, color: C.text }}>Pesseguinho</div>
+        <div style={{
+          fontSize: 13,
+          color: C.deepPeach,
+          marginTop: 4,
+          fontStyle: 'italic',
+          letterSpacing: '0.02em',
+        }}>
           Sua pele como p&ecirc;ssego &#129392;
         </div>
       </div>
