@@ -42,22 +42,15 @@ function IconColo({ size = 20, color = "#A89D98" }) {
 }
 
 // ── Ícone de área dinâmico ────────────────────────────────────────────────
-function AreaIcon({ area, size = 20, active = false }) {
+function AreaIcon({ area, size = 18, active = false }) {
   const color = active ? "#FFFFFF" : C.muted;
-  if (area.id === "costas") {
-    return (
-      <div style={{ width: size, height: size, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <IconCostas size={size} color={color} />
-      </div>
-    );
-  }
+  if (area.id === "costas") return <IconCostas size={size} color={color} />;
+  if (area.id === "colo") return <IconColo size={size} color={color} />;
   return (
     <span style={{
-      fontSize: size, width: size, height: size,
+      fontSize: size,
       display: "flex", alignItems: "center", justifyContent: "center",
-      lineHeight: 1,
       filter: active ? "none" : "grayscale(100%) opacity(0.6)",
-      transition: "all 0.2s",
     }}>
       {area.emoji}
     </span>
@@ -66,11 +59,10 @@ function AreaIcon({ area, size = 20, active = false }) {
 
 // ── Dados ─────────────────────────────────────────────────────────────────
 const AREAS = [
-  { id: "rosto",  label: "Rosto",  emoji: "🧖‍♀️", active: true },
-  { id: "colo",   label: "Colo",   emoji: null,   active: true },
-  { id: "pernas", label: "Pernas", emoji: "🦵",   active: true },
-  { id: "costas", label: "Costas", emoji: null,   active: true },
-  { id: "cabelo", label: "Cabelo", emoji: "💆‍♀️", active: true },
+  { id: "rosto",  label: "Rosto",  emoji: "✨",  active: true },
+  { id: "colo",   label: "Colo",   emoji: null,  active: true },
+  { id: "costas", label: "Costas", emoji: null,  active: true },
+  { id: "pernas", label: "Pernas", emoji: "🦵",  active: true },
 ];
 
 const PRODUCTS = {
