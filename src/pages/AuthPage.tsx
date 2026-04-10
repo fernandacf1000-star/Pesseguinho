@@ -85,7 +85,7 @@ export default function AuthPage() {
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
         <div className="mascot-float" style={{ marginBottom: 8 }}>
           <img
-            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote.png"
+            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png"
             alt="Pesseguinho"
             style={{
               width: 200,
