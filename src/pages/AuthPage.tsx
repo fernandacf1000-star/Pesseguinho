@@ -91,7 +91,7 @@ export default function AuthPage() {
               width: 200,
               height: 160,
               objectFit: 'contain',
-              mixBlendMode: "screen",
+              
               display: 'block',
               margin: '0 auto',
             }}
