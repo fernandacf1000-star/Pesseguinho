@@ -12,7 +12,6 @@ type Mode = 'login' | 'signup'
 
 export default function AuthPage() {
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
-
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,32 +24,26 @@ export default function AuthPage() {
     setError(null)
     setSuccess(null)
     setLoading(true)
-
     try {
       if (mode === 'signup') {
         const invited = await checkInvite(email)
         if (!invited) {
-          setError('Este email nao esta na lista de convidados. Solicite um convite.')
+          setError('Este email nao esta na lista de convidados.')
           setLoading(false)
           return
         }
         await signUpWithEmail(email, password)
         await markInviteUsed(email)
-        setSuccess('Conta criada! Verifique seu email para confirmar o cadastro.')
+        setSuccess('Conta criada! Verifique seu email.')
       } else {
         await signInWithEmail(email, password)
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro desconhecido'
-      if (msg.includes('Invalid login credentials')) {
-        setError('Email ou senha incorretos.')
-      } else if (msg.includes('Email not confirmed')) {
-        setError('Confirme seu email antes de entrar.')
-      } else if (msg.includes('User already registered')) {
-        setError('Este email ja tem uma conta. Faca login.')
-      } else {
-        setError(msg)
-      }
+      if (msg.includes('Invalid login credentials')) setError('Email ou senha incorretos.')
+      else if (msg.includes('Email not confirmed')) setError('Confirme seu email antes de entrar.')
+      else if (msg.includes('User already registered')) setError('Este email ja tem uma conta.')
+      else setError(msg)
     } finally {
       setLoading(false)
     }
@@ -80,20 +73,27 @@ export default function AuthPage() {
         input { outline: none; font-family: 'Outfit', sans-serif; }
         input:focus { border-color: #FF8C61 !important; }
         .auth-btn:active { transform: scale(0.98); }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .mascot-float { animation: float 3s ease-in-out infinite; }
       `}</style>
 
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ margin: '0 auto 12px', display: 'flex', justifyContent: 'center' }}>
+        <div className="mascot-float" style={{ margin: '0 auto 16px', display: 'flex', justifyContent: 'center' }}>
           <img
             src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/IMG_1192.png"
             alt="Pesseguinho"
-            width={90}
-            height={90}
+            width={126}
+            height={126}
             style={{ objectFit: 'contain' }}
           />
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, color: C.text }}>Pesseguinho</div>
-        <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Sua pele como pessego</div>
+        <div style={{ fontSize: 12, color: C.deepPeach, marginTop: 4, fontStyle: 'italic' }}>
+          Sua pele como p&ecirc;ssego &#129392;
+        </div>
       </div>
 
       <div style={{
@@ -139,11 +139,9 @@ export default function AuthPage() {
                 width: '100%', padding: '11px 14px', borderRadius: 12,
                 border: `1.5px solid ${C.border}`, fontSize: 14,
                 color: C.text, background: C.bg, boxSizing: 'border-box' as const,
-                transition: 'border-color 0.2s',
               }}
             />
           </div>
-
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>
               Senha
@@ -159,7 +157,6 @@ export default function AuthPage() {
                 width: '100%', padding: '11px 14px', borderRadius: 12,
                 border: `1.5px solid ${C.border}`, fontSize: 14,
                 color: C.text, background: C.bg, boxSizing: 'border-box' as const,
-                transition: 'border-color 0.2s',
               }}
             />
           </div>
@@ -169,19 +166,14 @@ export default function AuthPage() {
               background: '#FFF0F0', border: `1px solid ${C.rose}44`,
               borderRadius: 10, padding: '10px 12px',
               fontSize: 12, color: C.rose, fontWeight: 500,
-            }}>
-              {error}
-            </div>
+            }}>{error}</div>
           )}
-
           {success && (
             <div style={{
               background: '#F0FFF4', border: `1px solid ${C.green}44`,
               borderRadius: 10, padding: '10px 12px',
               fontSize: 12, color: C.green, fontWeight: 500,
-            }}>
-              {success}
-            </div>
+            }}>{success}</div>
           )}
 
           <button
@@ -193,9 +185,8 @@ export default function AuthPage() {
               background: loading ? C.peach : C.deepPeach,
               color: 'white', fontSize: 14, fontWeight: 700,
               cursor: loading ? 'default' : 'pointer',
-              transition: 'all 0.2s',
+              transition: 'all 0.2s', marginTop: 4,
               boxShadow: loading ? 'none' : '0 4px 14px rgba(255,140,97,0.35)',
-              marginTop: 4,
             }}
           >
             {loading ? '...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
@@ -217,8 +208,7 @@ export default function AuthPage() {
             border: `1.5px solid ${C.border}`,
             background: 'white', cursor: loading ? 'default' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            fontSize: 13, fontWeight: 600, color: C.text,
-            transition: 'all 0.2s',
+            fontSize: 13, fontWeight: 600, color: C.text, transition: 'all 0.2s',
           }}
         >
           <svg width="18" height="18" viewBox="0 0 18 18">
