@@ -88,10 +88,10 @@ export default function AuthPage() {
             src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/IMG_1192.png"
             alt="Pesseguinho"
             style={{
-              width: 160,
+              width: 200,
               height: 160,
               objectFit: 'contain',
-              mixBlendMode: 'multiply',
+              mixBlendMode: "multiply", filter: "brightness(1.08) contrast(0.95)",
               display: 'block',
               margin: '0 auto',
             }}
