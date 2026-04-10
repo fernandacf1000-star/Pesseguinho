@@ -82,32 +82,21 @@ export default function AuthPage() {
         }
       `}</style>
 
-     <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <img
-          className="mascot-float"
-          src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png"
-          alt="Pesseguinho"
-          style={{
-            width: 130,
-            height: 130,
-            objectFit: 'contain',
-            display: 'block',
-            margin: '0 auto -10px',
-            background: 'transparent',
-          }}
-        />
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.text, marginTop: 0 }}>Pesseguinho</div>
-        <div style={{
-          fontSize: 13,
-          color: C.deepPeach,
-          marginTop: 4,
-          fontStyle: 'italic',
-          letterSpacing: '0.02em',
-        }}>
-          Sua pele como p&ecirc;ssego &#129392;
+      <div style={{ textAlign: 'center', marginBottom: 28 }}>
+        <div className="mascot-float" style={{ marginBottom: -16 }}>
+          <img
+            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png"
+            alt="Pesseguinho"
+            style={{
+              width: 200,
+              height: 200,
+              objectFit: 'contain',
+              display: 'block',
+              margin: '0 auto',
+            }}
+          />
         </div>
-      </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.text }}>Pesseguinho</div>
+        <div style={{ fontSize: 26, fontWeight: 700, color: C.text, marginTop: 0 }}>Pesseguinho</div>
         <div style={{
           fontSize: 13,
           color: C.deepPeach,
