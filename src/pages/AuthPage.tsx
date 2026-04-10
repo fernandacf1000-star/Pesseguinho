@@ -88,17 +88,17 @@ export default function AuthPage() {
 
       {/* Logo + mascote */}
       <div style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{
-          width: 72, height: 72, borderRadius: '50%',
-          background: 'white', border: `3px solid ${C.peach}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36, margin: '0 auto 12px',
-          boxShadow: '0 8px 24px rgba(255,203,173,0.4)',
-        }}>
-          🍑
+        <div style={{ margin: '0 auto 12px', display: 'flex', justifyContent: 'center' }}>
+          <img
+            src="/mascote.png"
+            alt="Pesseguinho"
+            width={90}
+            height={90}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
         <div style={{ fontSize: 24, fontWeight: 700, color: C.text }}>Pesseguinho</div>
-        <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Skin & Care Tracker</div>
+        <div style={{ fontSize: 13, color: C.muted, marginTop: 2 }}>Sua pele como pêssego</div>
       </div>
 
       {/* Card */}
@@ -250,9 +250,16 @@ export default function AuthPage() {
           background: `${C.peach}33`, borderRadius: 10,
           fontSize: 11, color: C.muted, textAlign: 'center', lineHeight: 1.5,
         }}>
-          🔒 App restrito a convidados.<br />
-          Solicite acesso à Fernanda.
+          🔒 App restrito a convidados. Solicite acesso.
         </div>
+      </div>
+
+      {/* Rodapé discreto */}
+      <div style={{
+        marginTop: 24, fontSize: 11, color: C.muted,
+        textAlign: 'center', opacity: 0.7,
+      }}>
+        App restrito a convidados. Solicite acesso.
       </div>
     </div>
   )
