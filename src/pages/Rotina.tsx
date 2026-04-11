@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 
 const C = {
@@ -179,11 +179,10 @@ export default function App() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Simula carregamento inicial
-  useState(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1800);
     return () => clearTimeout(timer);
-  });
+  }, []);
 
   if (isLoading) return <LoadingScreen />;
   const [periodo, setPeriodo] = useState(() => {
