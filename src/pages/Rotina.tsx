@@ -116,9 +116,76 @@ function ProductList({ areaId }) {
   );
 }
 
+
+// ── Tela de loading com mascote flutuando ─────────────────────────────────
+function LoadingScreen() {
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#FFFBF5",
+      display: "flex", flexDirection: "column",
+      alignItems: "center", justifyContent: "center",
+      gap: 16, fontFamily: "'Outfit', sans-serif",
+    }}>
+      <style>{`
+        @keyframes float-loading {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-18px); }
+        }
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .loading-mascot {
+          animation: float-loading 2s ease-in-out infinite, fade-in 0.5s ease;
+        }
+        @keyframes dot-pulse {
+          0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
+          40% { opacity: 1; transform: scale(1); }
+        }
+        .dot1 { animation: dot-pulse 1.2s ease-in-out infinite 0s; }
+        .dot2 { animation: dot-pulse 1.2s ease-in-out infinite 0.2s; }
+        .dot3 { animation: dot-pulse 1.2s ease-in-out infinite 0.4s; }
+      `}</style>
+
+      <img
+        src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png"
+        alt="Pesseguinho"
+        className="loading-mascot"
+        style={{ width: 180, height: 180, objectFit: "contain" }}
+      />
+
+      <div style={{ fontSize: 18, fontWeight: 700, color: "#2D3436" }}>
+        Pesseguinho
+      </div>
+
+      <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+        {["dot1", "dot2", "dot3"].map((cls) => (
+          <div
+            key={cls}
+            className={cls}
+            style={{
+              width: 8, height: 8, borderRadius: "50%",
+              background: "#FF8C61",
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState(AREAS[0].id);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simula carregamento inicial
+  useState(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1800);
+    return () => clearTimeout(timer);
+  });
+
+  if (isLoading) return <LoadingScreen />;
   const [periodo, setPeriodo] = useState(() => {
     const hora = new Date().getHours();
     return hora >= 6 && hora < 18 ? "manha" : "noite";
@@ -171,7 +238,7 @@ export default function App() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
           {/* Mascote muda conforme período */}
           <div style={{
-            width: 64, height: 64, borderRadius: "50%", background: "white",
+            width: 80, height: 80, borderRadius: "50%", background: "white",
             border: `2.5px solid ${C.peach}`, overflow: "hidden",
             display: "flex", alignItems: "center", justifyContent: "center",
             boxShadow: "0 4px 12px rgba(255,203,173,0.4)",
