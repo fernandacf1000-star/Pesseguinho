@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAuth } from "../hooks/useAuth";
 
 const C = {
   bg: "#FFFBF5", peach: "#FFCBAD", deepPeach: "#FF8C61",
@@ -116,6 +117,7 @@ function ProductList({ areaId }) {
 }
 
 export default function App() {
+  const { signOut } = useAuth();
   const [activeTab, setActiveTab] = useState(AREAS[0].id);
   const [periodo, setPeriodo] = useState(() => {
     const hora = new Date().getHours();
@@ -166,23 +168,39 @@ export default function App() {
             ))}
           </div>
         </div>
-        {/* Mascote muda conforme período */}
-        <div style={{
-          width: 64, height: 64, borderRadius: "50%", background: "white",
-          border: `2.5px solid ${C.peach}`, overflow: "hidden",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          boxShadow: "0 4px 12px rgba(255,203,173,0.4)",
-          transition: "all 0.3s ease",
-        }}>
-          <img
-            src={periodo === "manha"
-              ? `${SUPABASE}/mascote-manha.png`
-              : `${SUPABASE}/mascote-noite.png`
-            }
-            alt="Pesseguinho"
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-            onError={(e) => { e.currentTarget.src = `${SUPABASE}/mascote2.png` }}
-          />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+          {/* Mascote muda conforme período */}
+          <div style={{
+            width: 64, height: 64, borderRadius: "50%", background: "white",
+            border: `2.5px solid ${C.peach}`, overflow: "hidden",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 4px 12px rgba(255,203,173,0.4)",
+            transition: "all 0.3s ease",
+          }}>
+            <img
+              src={periodo === "manha"
+                ? `${SUPABASE}/mascote-manha.png`
+                : `${SUPABASE}/mascote-noite.png`
+              }
+              alt="Pesseguinho"
+              style={{ width: "100%", height: "100%", objectFit: "contain" }}
+              onError={(e) => { e.currentTarget.src = `${SUPABASE}/mascote2.png` }}
+            />
+          </div>
+          {/* Botão logout */}
+          <button
+            onClick={() => signOut()}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 10, color: C.muted, display: "flex",
+              alignItems: "center", gap: 3, padding: 0,
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Sair
+          </button>
         </div>
       </div>
 
