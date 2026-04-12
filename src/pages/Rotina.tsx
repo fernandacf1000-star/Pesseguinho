@@ -315,66 +315,144 @@ Se não houver sugestões, retorne "sugestoes":[].`
   )
 }
 
-function ProductList({ produtos }: { produtos: Produto[] }) {
+const FASES = [
+  { id: 'limpeza',   label: 'Limpeza & Preparo',    categorias: ['Limpeza'] },
+  { id: 'tratamento', label: 'Tratamento Específico', categorias: ['Vitamina C','Clareador','Peptídeos','Niacinamida','Sérum','Sérum Antiacne','Esfoliante','Retinoide','Tratamento','Peeling'] },
+  { id: 'olhos',     label: 'Área dos Olhos',        categorias: ['Sérum Olhos','Creme Olhos'] },
+  { id: 'reparo',    label: 'Reparo & Selagem',      categorias: ['Hidratante','Barreira/Reparador','Óleo Facial','Labial'] },
+  { id: 'protecao',  label: 'Proteção',              categorias: ['Protetor Solar'] },
+]
+
+const ALTO_RISCO = ['retinoide','esfoliante','peeling','tratamento']
+
+function isAltoRisco(categoria: string): boolean {
+  return ALTO_RISCO.some(r => categoria.toLowerCase().includes(r))
+}
+
+function ProductCard({ p, isChecked, onClick, peleSensivel }: {
+  p: Produto, isChecked: boolean, onClick: () => void, peleSensivel: boolean
+}) {
+  const altoRisco = isAltoRisco(p.categoria)
+  const [showToast, setShowToast] = useState(false)
+
+  function handleClick() {
+    if (peleSensivel && altoRisco && !isChecked) {
+      setShowToast(true)
+      setTimeout(() => setShowToast(false), 2500)
+    }
+    onClick()
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {showToast && (
+        <div style={{
+          position: 'absolute', top: -36, left: 0, right: 0, zIndex: 10,
+          background: C.deepPeach, color: 'white', borderRadius: 10,
+          padding: '6px 12px', fontSize: 11, fontWeight: 600, textAlign: 'center',
+        }}>
+          Pele sensível hoje. Use com cautela! 🧡
+        </div>
+      )}
+      <div onClick={handleClick}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: C.card,
+          border: `1.5px solid ${isChecked ? C.green : C.border}`,
+          borderRadius: 16, padding: '12px 16px', cursor: 'pointer',
+          transition: 'all 0.2s ease',
+          opacity: isChecked ? 0.7 : (peleSensivel && altoRisco ? 0.6 : 1),
+          transform: isChecked ? 'scale(0.98)' : 'scale(1)',
+          filter: peleSensivel && altoRisco && !isChecked ? 'grayscale(40%)' : 'none',
+        }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+          background: isChecked ? C.green : C.peach,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 13, fontWeight: 800, color: isChecked ? 'white' : C.deepPeach,
+        }}>{p.ordem}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{
+              fontSize: 13, fontWeight: 700, color: C.text,
+              textDecoration: isChecked ? 'line-through' : 'none', opacity: isChecked ? 0.5 : 1,
+            }}>{p.categoria}</div>
+            {peleSensivel && altoRisco && <span style={{ fontSize: 12 }}>⚠️</span>}
+            {peleSensivel && !altoRisco && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, color: '#3B6D11',
+                background: '#EAF3DE', borderRadius: 6, padding: '2px 6px',
+              }}>SKIN FRIENDLY</span>
+            )}
+          </div>
+          <div style={{ fontSize: 11, color: C.muted }}>
+            {p.marca} · <span style={{ fontWeight: 500 }}>{p.nome}</span>
+          </div>
+          {p.descricao_ia && (
+            <div style={{ fontSize: 10, color: C.muted, marginTop: 2, fontStyle: 'italic' }}>
+              {p.descricao_ia.slice(0, 60)}{p.descricao_ia.length > 60 ? '…' : ''}
+            </div>
+          )}
+        </div>
+        <div style={{
+          width: 20, height: 20, borderRadius: 6, flexShrink: 0,
+          border: `2px solid ${isChecked ? C.green : C.border}`,
+          background: isChecked ? C.green : 'transparent',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          {isChecked && (
+            <svg width="10" height="10" viewBox="0 0 11 11" fill="none">
+              <path d="M2 5.5L4.5 8L9 3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ProductList({ produtos, peleSensivel }: { produtos: Produto[], peleSensivel: boolean }) {
   const [checked, setChecked] = useState<Record<string, boolean>>({})
   const total = produtos.length
   const done = Object.values(checked).filter(Boolean).length
 
+  if (produtos.length === 0) return (
+    <div style={{ textAlign: 'center', padding: '20px 0', color: C.muted, fontSize: 13 }}>
+      Nenhum produto cadastrado para esta área e período.
+    </div>
+  )
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ height: 4, background: C.border, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <div style={{ height: 4, background: C.border, borderRadius: 2, marginBottom: 16, overflow: 'hidden' }}>
         <div style={{
           height: '100%', width: `${total > 0 ? (done / total) * 100 : 0}%`,
           background: C.green, transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }} />
       </div>
-      {produtos.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '20px 0', color: C.muted, fontSize: 13 }}>
-          Nenhum produto cadastrado para esta área e período.
-        </div>
-      )}
-      {produtos.map((p) => {
-        const isChecked = checked[p.id] ?? false
+      {FASES.map(fase => {
+        const itens = produtos.filter(p => fase.categorias.some(c => p.categoria.includes(c)))
+        if (itens.length === 0) return null
         return (
-          <div key={p.id} onClick={() => setChecked(prev => ({ ...prev, [p.id]: !isChecked }))}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              background: C.card, border: `1.5px solid ${isChecked ? C.green : C.border}`,
-              borderRadius: 16, padding: '12px 16px', cursor: 'pointer',
-              transition: 'all 0.2s ease', opacity: isChecked ? 0.7 : 1,
-              transform: isChecked ? 'scale(0.98)' : 'scale(1)',
-            }}>
+          <div key={fase.id} style={{ marginBottom: 16 }}>
             <div style={{
-              width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-              background: isChecked ? C.green : C.peach,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 800, color: isChecked ? 'white' : C.deepPeach,
-            }}>{p.ordem}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                fontSize: 13, fontWeight: 700, color: C.text,
-                textDecoration: isChecked ? 'line-through' : 'none', opacity: isChecked ? 0.5 : 1,
-              }}>{p.categoria}</div>
-              <div style={{ fontSize: 11, color: C.muted }}>
-                {p.marca} · <span style={{ fontWeight: 500 }}>{p.nome}</span>
-              </div>
-              {p.descricao_ia && (
-                <div style={{ fontSize: 10, color: C.muted, marginTop: 2, fontStyle: 'italic' }}>
-                  {p.descricao_ia.slice(0, 60)}{p.descricao_ia.length > 60 ? '…' : ''}
-                </div>
-              )}
+              fontSize: 9, fontWeight: 700, color: C.muted,
+              letterSpacing: 1.5, textTransform: 'uppercase',
+              paddingBottom: 8, marginBottom: 8,
+              borderBottom: `1px solid ${C.border}`,
+            }}>
+              {fase.label}
             </div>
-            <div style={{
-              width: 20, height: 20, borderRadius: 6, flexShrink: 0,
-              border: `2px solid ${isChecked ? C.green : C.border}`,
-              background: isChecked ? C.green : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              {isChecked && (
-                <svg width="10" height="10" viewBox="0 0 11 11" fill="none">
-                  <path d="M2 5.5L4.5 8L9 3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {itens.map(p => (
+                <ProductCard
+                  key={p.id}
+                  p={p}
+                  isChecked={checked[p.id] ?? false}
+                  onClick={() => setChecked(prev => ({ ...prev, [p.id]: !(prev[p.id] ?? false) }))}
+                  peleSensivel={peleSensivel}
+                />
+              ))}
             </div>
           </div>
         )
@@ -386,6 +464,7 @@ function ProductList({ produtos }: { produtos: Produto[] }) {
 export default function Rotina() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id)
   const [produtos, setProdutos] = useState<Produto[]>([])
+  const [peleSensivel, setPeleSensivel] = useState(false)
   const [periodo, setPeriodo] = useState<'manha' | 'noite'>(() => {
     const hora = new Date().getHours()
     return hora >= 6 && hora < 18 ? 'manha' : 'noite'
@@ -497,7 +576,7 @@ export default function Rotina() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '0 16px 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {AREAS.map((area) => {
           const isActive = area.id === activeTab
           return (
@@ -539,11 +618,35 @@ export default function Rotina() {
             background: `${C.peach}44`, color: C.deepPeach,
             padding: '4px 12px', borderRadius: 10, fontSize: 11, fontWeight: 800,
           }}>{current.label.toUpperCase()}</span>
-          <span style={{ fontSize: 11, color: C.muted }}>
-            {produtosFiltrados.length} produtos
-          </span>
+          <button
+            onClick={() => setPeleSensivel(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '5px 10px', borderRadius: 20, border: 'none', cursor: 'pointer',
+              background: peleSensivel ? `${C.deepPeach}22` : C.border,
+              transition: 'all 0.25s',
+            }}>
+            <div style={{
+              width: 28, height: 16, borderRadius: 8,
+              background: peleSensivel ? C.deepPeach : C.muted,
+              position: 'relative', transition: 'background 0.25s',
+            }}>
+              <div style={{
+                position: 'absolute', top: 2,
+                left: peleSensivel ? 14 : 2,
+                width: 12, height: 12, borderRadius: '50%',
+                background: 'white', transition: 'left 0.25s',
+              }} />
+            </div>
+            <span style={{
+              fontSize: 10, fontWeight: 700,
+              color: peleSensivel ? C.deepPeach : C.muted,
+            }}>
+              {peleSensivel ? '🌸 Sensível' : 'Pele normal'}
+            </span>
+          </button>
         </div>
-        <ProductList produtos={produtosFiltrados} />
+        <ProductList produtos={produtosFiltrados} peleSensivel={peleSensivel} />
       </div>
 
       {/* Chat IA */}
