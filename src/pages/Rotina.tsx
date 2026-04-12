@@ -133,7 +133,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: 'application/json' }
+            
           })
         }
       )
