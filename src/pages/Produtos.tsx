@@ -76,7 +76,7 @@ Retorne exatamente este JSON:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: 'application/json' }
+          
         })
       }
     )
