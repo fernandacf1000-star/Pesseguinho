@@ -358,7 +358,6 @@ export default function Evolucao() {
               type="file"
               accept="image/*"
               multiple
-              capture="environment"
               style={{ display: 'none' }}
               onChange={handleUpload}
             />
