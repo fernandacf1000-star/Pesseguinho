@@ -11,7 +11,7 @@ const SUPABASE_URL = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object
 
 const AREAS_LIST = ['Rosto', 'Colo', 'Costas', 'Pernas', 'Cabelo']
 const PERIODOS_LIST = ['Manha', 'Noite']
-const CATEGORIAS_LIST = ['Limpeza', 'Tratamento', 'Hidratação', 'Proteção', 'Finalização']
+const CATEGORIAS_LIST = ['Limpeza','Vitamina C','Clareador','Peptídeos','Niacinamida','Sérum','Sérum Antiacne','Esfoliante','Retinoide','Tratamento','Peeling','Sérum Olhos','Creme Olhos','Hidratante','Barreira/Reparador','Óleo Facial','Labial','Protetor Solar']
 const STATUS_LIST = ['ativo', 'pausado', 'acabou']
 
 const AREA_ICONS: Record<string, string> = {
@@ -39,11 +39,12 @@ type Produto = {
   status: string
   em_uso: boolean
   descricao_ia: string
+  dias_da_semana: string[] | null
 }
 
 const EMPTY_PRODUTO = {
   nome: '', marca: '', categoria: '', areas: [] as string[],
-  periodos: [] as string[], ordem: 5, status: 'ativo',
+  periodos: [] as string[], dias_da_semana: ['Todos'] as string[], ordem: 5, status: 'ativo',
   em_uso: true, descricao_ia: '',
 }
 
@@ -70,7 +71,7 @@ Retorne exatamente este JSON:
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +83,8 @@ Retorne exatamente este JSON:
     )
     const data = await res.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-    return JSON.parse(text)
+    const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    return JSON.parse(clean)
   } catch {
     return null
   }
@@ -195,8 +197,9 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
   const [form, setForm] = useState({ ...EMPTY_PRODUTO, ...inicial })
   const [loadingIA, setLoadingIA] = useState(false)
   const [iaResult, setIaResult] = useState<{ descricao: string; ordem: number; interacoes: string } | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
-  const toggle = (field: 'areas' | 'periodos', val: string) => {
+  const toggle = (field: 'areas' | 'periodos' | 'dias_da_semana', val: string) => {
     setForm(f => ({
       ...f,
       [field]: f[field].includes(val) ? f[field].filter(x => x !== val) : [...f[field], val]
@@ -298,6 +301,39 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
           </div>
         </div>
 
+
+        {/* Dias da Semana */}
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 11, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>Dias da Semana</label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Todos','Segunda','Terca','Quarta','Quinta','Sexta','Sabado','Domingo'].map(dia => {
+              const selected = (form.dias_da_semana || ['Todos']).includes(dia)
+              return (
+                <button key={dia} onClick={() => {
+                  if (dia === 'Todos') {
+                    setForm(f => ({ ...f, dias_da_semana: ['Todos'] }))
+                  } else {
+                    setForm(f => {
+                      const cur = (f.dias_da_semana || ['Todos']).filter(d => d !== 'Todos')
+                      const next = cur.includes(dia) ? cur.filter(d => d !== dia) : [...cur, dia]
+                      return { ...f, dias_da_semana: next.length === 0 ? ['Todos'] : next }
+                    })
+                  }
+                }}
+                  style={{
+                    padding: '6px 10px', borderRadius: 10,
+                    border: `1.5px solid ${selected ? C.deepPeach : C.border}`,
+                    background: selected ? `${C.deepPeach}22` : 'transparent',
+                    color: selected ? C.deepPeach : C.muted,
+                    fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  }}>
+                  {dia === 'Terca' ? 'Terça' : dia === 'Sabado' ? 'Sábado' : dia}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         {/* Ordem */}
         <div style={{ marginBottom: 12 }}>
           <label style={{ fontSize: 11, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6, textTransform: 'uppercase' }}>
@@ -327,6 +363,38 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
             ))}
           </div>
         </div>
+
+
+        {/* Delete inline */}
+        {inicial.id && (
+          <div style={{ marginBottom: 12 }}>
+            {!confirmDelete ? (
+              <button onClick={() => setConfirmDelete(true)}
+                style={{
+                  width: '100%', padding: '11px', borderRadius: 14, border: `1.5px solid #F28C8C`,
+                  background: 'transparent', color: '#F28C8C',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                }}>
+                🗑️ Excluir produto
+              </button>
+            ) : (
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => setConfirmDelete(false)}
+                  style={{
+                    flex: 1, padding: '11px', borderRadius: 14, border: `1.5px solid ${C.border}`,
+                    background: 'transparent', color: C.muted,
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}>Cancelar</button>
+                <button onClick={() => onSave({ ...form, _delete: true } as any)}
+                  style={{
+                    flex: 1, padding: '11px', borderRadius: 14, border: 'none',
+                    background: '#F28C8C', color: 'white',
+                    fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                  }}>Confirmar exclusão</button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Botão IA */}
         <button onClick={handleIA} disabled={!form.nome || loadingIA}
@@ -405,14 +473,21 @@ export default function Produtos() {
     setLoading(false)
   }
 
-  async function salvar(form: Partial<Produto>) {
+  async function salvar(form: Partial<Produto> & { _delete?: boolean }) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    if (form.id) {
-      await supabase.from('produtos').update({ ...form }).eq('id', form.id)
+    if (form._delete && form.id) {
+      await supabase.from('produtos').delete().eq('id', form.id)
+    } else if (form.id) {
+      const { _delete, ...data } = form as any
+      await supabase.from('produtos').update({ ...data }).eq('id', form.id)
     } else {
-      await supabase.from('produtos').insert({ ...form, user_id: user.id })
+      await supabase.from('produtos').insert({
+        ...form,
+        user_id: user.id,
+        dias_da_semana: form.dias_da_semana || ['Todos'],
+      })
     }
     setShowForm(false)
     setEditando(null)
