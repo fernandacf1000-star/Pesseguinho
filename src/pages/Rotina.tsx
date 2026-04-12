@@ -634,7 +634,7 @@ export default function Rotina() {
 
   async function carregarProdutos() {
     const { data } = await supabase
-      .from('produtos')
+      .from('produtos_ativos')
       .select('*')
       .eq('em_uso', true)
       .order('ordem', { ascending: true })
@@ -723,7 +723,7 @@ export default function Rotina() {
             <img
               src={periodo === 'manha' ? `${SUPABASE}/mascote-manha.png` : `${SUPABASE}/mascote-noite.png`}
               alt="Pesseguinho"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: periodo === 'manha' ? 'scale(1.25)' : 'scale(1.18)' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: periodo === 'manha' ? 'scale(1.1) translateY(4px)' : 'scale(1.35)', transformOrigin: 'center center' }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = `${SUPABASE}/mascote2.png` }}
             />
           </div>
