@@ -111,28 +111,17 @@ function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (suge
       `- ${p.nome} (${p.marca}) | Categoria: ${p.categoria} | Áreas: ${p.areas.join(', ')} | Período: ${p.periodos.join('/')} | Ordem: ${p.ordem} | Em uso: ${p.em_uso} | ID: ${p.id}`
     ).join('\n')
 
-    const prompt = `Você é uma especialista em skincare. Responda em português brasileiro de forma clara e empática.
+    const prompt = `Você é uma especialista em skincare. Responda em português brasileiro de forma direta e concisa — máximo 5 frases na resposta, sem introduções longas.
 
-Rotina atual da usuária:
+Rotina atual:
 ${listaProdutos || 'Nenhum produto cadastrado ainda.'}
 
 Pergunta: "${pergunta}"
 
-Responda com um JSON exato neste formato:
-{
-  "resposta": "sua resposta explicativa aqui",
-  "sugestoes": [
-    {
-      "produto_id": "id do produto",
-      "nome": "nome do produto",
-      "acao": "pausar" ou "reativar" ou "mudar_ordem" ou "mudar_periodo",
-      "valor": número para mudar_ordem, ou "Manha"/"Noite" para mudar_periodo
-    }
-  ]
-}
+Retorne SOMENTE um JSON válido, sem markdown, sem backticks, sem texto fora do JSON:
+{"resposta":"resposta curta e direta aqui","sugestoes":[{"produto_id":"id","nome":"nome","acao":"pausar|reativar|mudar_ordem|mudar_periodo","valor":null}]}
 
-Se não houver sugestões de mudança, retorne "sugestoes": [].
-Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
+Se não houver sugestões, retorne "sugestoes":[].`
 
     try {
       if (!GEMINI_KEY) {
@@ -159,7 +148,8 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
       }
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text
       try {
-        const parsed = JSON.parse(text)
+        const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+        const parsed = JSON.parse(clean)
         setMsgs(m => [...m, {
           role: 'ai',
           text: parsed.resposta,
