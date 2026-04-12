@@ -339,11 +339,19 @@ export default function Evolucao() {
             Registre e compare sua evolução ao longo do tempo
           </div>
         </div>
-        <img
-          src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-foto.png"
-          alt="Pesseguinho"
-          style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }}
-        />
+        <div style={{
+          width: 80, height: 80, borderRadius: '50%', background: 'white',
+          border: `2.5px solid ${C.peach}`, overflow: 'visible',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 4px 12px rgba(255,203,173,0.4)',
+          flexShrink: 0, position: 'relative',
+        }}>
+          <img
+            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-foto.png"
+            alt="Pesseguinho"
+            style={{ width: 110, height: 110, objectFit: 'contain', position: 'absolute' }}
+          />
+        </div>
       </div>
 
       <div style={{
