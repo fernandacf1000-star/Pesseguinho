@@ -121,7 +121,7 @@ function ProdutoCard({ produto, onToggle, onEdit }: {
         overflow: 'hidden',
       }}>
         {produto.areas[0] && AREA_ICONS[produto.areas[0]] ? (
-          <img src={AREA_ICONS[produto.areas[0]]} style={{ width: 28, height: 28, objectFit: 'contain' }} />
+          <img src={AREA_ICONS[produto.areas[0]]} style={{ width: 32, height: 32, objectFit: 'contain' }} />
         ) : (
           <span style={{ fontSize: 20 }}>🧴</span>
         )}
@@ -473,7 +473,7 @@ export default function Produtos() {
           <button key={area} onClick={() => setFiltroArea(area === filtroArea ? null : area)}
             style={{
               flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 12px', borderRadius: 10,
+              padding: '7px 12px', borderRadius: 12,
               border: `1.5px solid ${filtroArea === area ? C.deepPeach : C.border}`,
               background: filtroArea === area ? C.deepPeach : '#FFF5F0',
               color: filtroArea === area ? 'white' : C.muted,
@@ -483,7 +483,7 @@ export default function Produtos() {
             <img
               src={AREA_ICONS[area]}
               style={{
-                width: 16, height: 16, objectFit: 'contain',
+                width: 24, height: 24, objectFit: 'contain',
                 filter: filtroArea === area ? 'brightness(0) invert(1)' : 'none',
                 transition: 'filter 0.2s',
               }}
