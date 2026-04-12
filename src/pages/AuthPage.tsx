@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 import { checkInvite, markInviteUsed } from '../lib/inviteList'
 
 const C = {
@@ -13,7 +13,6 @@ const MASCOTE = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/publ
 type Mode = 'login' | 'signup'
 
 export default function AuthPage() {
-  const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,43 +20,47 @@ export default function AuthPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
-  async function handleEmailSubmit(e: React.FormEvent) {
+  async function handleEmail(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setSuccess(null)
     setLoading(true)
-    try {
-      if (mode === 'signup') {
-        const invited = await checkInvite(email)
-        if (!invited) {
-          setError('Este email nao esta na lista de convidados.')
-          setLoading(false)
-          return
-        }
-        await signUpWithEmail(email, password)
-        await markInviteUsed(email)
-        setSuccess('Conta criada! Verifique seu email.')
-      } else {
-        await signInWithEmail(email, password)
+
+    if (mode === 'signup') {
+      const invited = await checkInvite(email)
+      if (!invited) {
+        setError('Este email não está na lista de convidados. Solicite acesso à Fernanda.')
+        setLoading(false)
+        return
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro desconhecido'
-      if (msg.includes('Invalid login credentials')) setError('Email ou senha incorretos.')
-      else if (msg.includes('Email not confirmed')) setError('Confirme seu email antes de entrar.')
-      else if (msg.includes('User already registered')) setError('Este email ja tem uma conta.')
-      else setError(msg)
-    } finally {
-      setLoading(false)
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) {
+        if (error.message.includes('User already registered')) setError('Este email já tem uma conta. Faça login.')
+        else setError(error.message)
+      } else {
+        await markInviteUsed(email)
+        setSuccess('Conta criada! Verifique seu email para confirmar.')
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        if (error.message.includes('Invalid login credentials')) setError('Email ou senha incorretos.')
+        else if (error.message.includes('Email not confirmed')) setError('Confirme seu email antes de entrar.')
+        else setError(error.message)
+      }
     }
+    setLoading(false)
   }
 
   async function handleGoogle() {
     setError(null)
     setLoading(true)
-    try {
-      await signInWithGoogle()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao conectar com Google')
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    if (error) {
+      setError('Erro ao conectar com Google.')
       setLoading(false)
     }
   }
@@ -65,96 +68,77 @@ export default function AuthPage() {
   return (
     <div style={{
       fontFamily: "'Outfit', sans-serif",
-      background: C.bg,
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
+      background: C.bg, minHeight: '100vh',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
       padding: '24px 20px',
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap');
         input { outline: none; font-family: 'Outfit', sans-serif; }
         input:focus { border-color: #FF8C61 !important; }
-        .auth-btn:active { transform: scale(0.98); }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
         .mascot-float { animation: float 3.5s ease-in-out infinite; }
+        .btn:active { transform: scale(0.98); }
       `}</style>
 
-      <div style={{ textAlign: 'center', marginBottom: -50 }}>
+      {/* Mascote */}
+      <div style={{ textAlign: 'center', marginBottom: 8 }}>
         <div className="mascot-float">
-          <img
-            src={MASCOTE}
-            alt="Pesseguinho"
-            style={{ width: 200, height: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }}
-          />
+          <img src={MASCOTE} alt="Pesseguinho"
+            style={{ width: 160, height: 160, objectFit: 'contain', display: 'block', margin: '0 auto' }} />
         </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.text }}>Pesseguinho</div>
-        <div style={{ fontSize: 12, color: C.deepPeach, marginTop: 4, fontStyle: 'italic', letterSpacing: '0.02em' }}>
-          Sua pele como p&ecirc;ssego &#129392;
+        <div style={{ fontSize: 24, fontWeight: 800, color: C.text, marginTop: 4 }}>Pesseguinho</div>
+        <div style={{ fontSize: 12, color: C.deepPeach, marginTop: 2, fontStyle: 'italic' }}>
+          Sua pele como pêssego 🍑
         </div>
       </div>
 
+      {/* Card */}
       <div style={{
         width: '100%', maxWidth: 380,
         background: C.card, borderRadius: 24,
         border: `1.5px solid ${C.border}`,
         padding: '28px 24px',
         boxShadow: '0 8px 32px rgba(255,203,173,0.15)',
-        marginTop: 70,
+        marginTop: 16,
       }}>
-        <div style={{
-          display: 'flex', background: C.bg, borderRadius: 12,
-          padding: 4, marginBottom: 24, gap: 4,
-        }}>
-          {(['login', 'signup'] as Mode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => { setMode(m); setError(null); setSuccess(null) }}
+        {/* Toggle login/cadastro */}
+        <div style={{ display: 'flex', background: C.bg, borderRadius: 12, padding: 4, marginBottom: 24, gap: 4 }}>
+          {(['login', 'signup'] as Mode[]).map(m => (
+            <button key={m} onClick={() => { setMode(m); setError(null); setSuccess(null) }}
               style={{
                 flex: 1, padding: '8px', borderRadius: 10, border: 'none',
                 cursor: 'pointer', fontSize: 13, fontWeight: 600,
                 background: mode === m ? C.deepPeach : 'transparent',
                 color: mode === m ? 'white' : C.muted,
                 transition: 'all 0.2s',
-              }}
-            >
+              }}>
               {m === 'login' ? 'Entrar' : 'Cadastrar'}
             </button>
           ))}
         </div>
 
-        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {/* Formulário */}
+        <form onSubmit={handleEmail} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>Email</label>
-            <input
-              type="email" value={email}
-              onChange={(e) => setEmail(e.target.value)}
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
               placeholder="seu@email.com" required
               style={{
-                width: '100%', padding: '11px 14px', borderRadius: 12,
-                border: `1.5px solid ${C.border}`, fontSize: 14,
-                color: C.text, background: C.bg, boxSizing: 'border-box' as const,
-              }}
-            />
+                width: '100%', padding: '11px 14px', borderRadius: 12, boxSizing: 'border-box',
+                border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text, background: C.bg,
+              }} />
           </div>
           <div>
             <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>Senha</label>
-            <input
-              type="password" value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={mode === 'signup' ? 'Minimo 6 caracteres' : ''}
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)}
+              placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
               required minLength={6}
               style={{
-                width: '100%', padding: '11px 14px', borderRadius: 12,
-                border: `1.5px solid ${C.border}`, fontSize: 14,
-                color: C.text, background: C.bg, boxSizing: 'border-box' as const,
-              }}
-            />
+                width: '100%', padding: '11px 14px', borderRadius: 12, boxSizing: 'border-box',
+                border: `1.5px solid ${C.border}`, fontSize: 14, color: C.text, background: C.bg,
+              }} />
           </div>
 
           {error && (
@@ -172,26 +156,28 @@ export default function AuthPage() {
             }}>{success}</div>
           )}
 
-          <button type="submit" disabled={loading} className="auth-btn"
+          <button type="submit" disabled={loading} className="btn"
             style={{
               width: '100%', padding: '13px', borderRadius: 14, border: 'none',
               background: loading ? C.peach : C.deepPeach,
               color: 'white', fontSize: 14, fontWeight: 700,
               cursor: loading ? 'default' : 'pointer',
-              transition: 'all 0.2s', marginTop: 4,
               boxShadow: loading ? 'none' : '0 4px 14px rgba(255,140,97,0.35)',
+              transition: 'all 0.2s',
             }}>
             {loading ? '...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
           </button>
         </form>
 
+        {/* Separador */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '20px 0' }}>
           <div style={{ flex: 1, height: 1, background: C.border }} />
-          <span style={{ fontSize: 12, color: C.muted }}>ou</span>
+          <span style={{ fontSize: 12, color: C.muted, fontWeight: 600 }}>OU</span>
           <div style={{ flex: 1, height: 1, background: C.border }} />
         </div>
 
-        <button onClick={handleGoogle} disabled={loading} className="auth-btn"
+        {/* Google */}
+        <button onClick={handleGoogle} disabled={loading} className="btn"
           style={{
             width: '100%', padding: '12px', borderRadius: 14,
             border: `1.5px solid ${C.border}`,
@@ -213,7 +199,9 @@ export default function AuthPage() {
           background: `${C.peach}33`, borderRadius: 10,
           fontSize: 11, color: C.muted, textAlign: 'center', lineHeight: 1.5,
         }}>
-          App restrito a convidados. Solicite acesso.
+          {mode === 'signup'
+            ? 'O cadastro é restrito a convidados. Solicite acesso à Fernanda.'
+            : 'App restrito a convidados. Solicite acesso à Fernanda.'}
         </div>
       </div>
     </div>
