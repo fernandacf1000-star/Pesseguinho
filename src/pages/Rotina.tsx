@@ -76,7 +76,7 @@ function LoadingScreen() {
 function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (sugestoes: Sugestao[]) => void }) {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<MsgChat[]>([
-    { role: 'ai', text: 'Olá! Pode me perguntar sobre sua rotina. Ex: "Minha pele está descascando, devo manter o retinal?"' }
+    { role: 'ai', text: 'Olá! Sou o Dr. Pessê 🍑 Pode me perguntar qualquer coisa sobre sua rotina! Ex: "Minha pele está descascando, devo manter o retinal?"' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -173,19 +173,27 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
           <div style={{
             background: C.card, width: '100%', maxWidth: 430, margin: '0 auto',
             borderTopLeftRadius: 28, borderTopRightRadius: 28,
-            height: '75vh', display: 'flex', flexDirection: 'column',
+            height: '70dvh', maxHeight: '70vh', display: 'flex', flexDirection: 'column',
           }}>
             {/* Header */}
             <div style={{
-              padding: '16px 20px 12px', borderBottom: `1px solid ${C.border}`,
+              padding: '14px 20px 12px', borderBottom: `1px solid ${C.border}`,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              gap: 10,
             }}>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>✨ Consultora de Skincare</div>
-                <div style={{ fontSize: 11, color: C.muted }}>Powered by Gemini</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <img
+                  src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-drpesse.png"
+                  alt="Dr. Pesse"
+                  style={{ width: 44, height: 44, objectFit: 'contain' }}
+                />
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>Dr. Pessê 🍑</div>
+                  <div style={{ fontSize: 10, color: C.muted }}>Seu consultor pessoal de skincare</div>
+                </div>
               </div>
               <button onClick={() => setOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: C.muted }}>✕</button>
+                style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: C.muted, flexShrink: 0 }}>✕</button>
             </div>
 
             {/* Mensagens */}
@@ -255,7 +263,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
 
             {/* Input */}
             <div style={{
-              padding: '12px 16px 24px', borderTop: `1px solid ${C.border}`,
+              padding: '12px 16px 32px', borderTop: `1px solid ${C.border}`,
               display: 'flex', gap: 8,
             }}>
               <input
