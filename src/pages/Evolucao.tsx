@@ -327,16 +327,23 @@ export default function Evolucao() {
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
-      <div style={{ padding: '52px 20px 20px' }}>
-        <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
-          Acompanhamento
+      <div style={{ padding: '52px 20px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
+            Acompanhamento
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>
+            Evolução da Pele
+          </div>
+          <div style={{ fontSize: 12, color: C.muted }}>
+            Registre e compare sua evolução ao longo do tempo
+          </div>
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4 }}>
-          Evolução da Pele
-        </div>
-        <div style={{ fontSize: 12, color: C.muted }}>
-          Registre e compare sua evolução ao longo do tempo
-        </div>
+        <img
+          src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-foto.png"
+          alt="Pesseguinho"
+          style={{ width: 90, height: 90, objectFit: 'contain', flexShrink: 0 }}
+        />
       </div>
 
       <div style={{
