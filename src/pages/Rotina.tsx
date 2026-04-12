@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { supabase } from '../lib/supabase'
 
 const C = {
   bg: '#FFFBF5', peach: '#FFCBAD', deepPeach: '#FF8C61',
@@ -7,6 +8,33 @@ const C = {
 }
 
 const SUPABASE = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets'
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
+
+type Produto = {
+  id: string
+  nome: string
+  marca: string
+  categoria: string
+  areas: string[]
+  periodos: string[]
+  ordem: number
+  status: string
+  em_uso: boolean
+  descricao_ia: string
+}
+
+type Sugestao = {
+  produto_id: string
+  nome: string
+  acao: 'pausar' | 'reativar' | 'mudar_ordem' | 'mudar_periodo'
+  valor?: number | string
+}
+
+type MsgChat = {
+  role: 'user' | 'ai'
+  text: string
+  sugestoes?: Sugestao[]
+}
 
 const AREAS = [
   { id: 'rosto',  label: 'Rosto',  icon: `${SUPABASE}/icon-rosto.png`  },
@@ -15,33 +43,6 @@ const AREAS = [
   { id: 'cabelo', label: 'Cabelo', icon: `${SUPABASE}/icon-cabelo.png` },
   { id: 'pernas', label: 'Pernas', icon: `${SUPABASE}/icon-pernas.png` },
 ]
-
-const PRODUCTS: Record<string, { step: number; category: string; name: string; brand: string }[]> = {
-  rosto: [
-    { step: 1, category: 'Limpeza',          name: 'Gel de Limpeza Suave', brand: 'La Roche-Posay'  },
-    { step: 2, category: 'Tratamento',        name: 'Niacinamide 10%',      brand: 'The Ordinary'    },
-    { step: 3, category: 'Tratamento Forte',  name: 'Retinal 0.1%',         brand: 'Geek & Gorgeous' },
-    { step: 4, category: 'Hidratação',        name: 'Hidratante Calmante',  brand: 'Bioderma'        },
-  ],
-  colo: [
-    { step: 1, category: 'Tratamento', name: 'Sérum Copper Peptides',      brand: 'Biossance' },
-    { step: 2, category: 'Hidratação', name: 'Creme Firmador Resveratrol', brand: 'Caudalie'  },
-    { step: 3, category: 'Proteção',   name: 'Protetor Solar FPS 50',      brand: 'Isdin'     },
-  ],
-  costas: [
-    { step: 1, category: 'Limpeza',    name: 'Sabonete Antiacne', brand: 'Benzac'     },
-    { step: 2, category: 'Tratamento', name: 'Creme Esfoliante',  brand: 'Neutrogena' },
-  ],
-  cabelo: [
-    { step: 1, category: 'Limpeza',         name: 'Shampoo Baixo Poo', brand: 'WNF'    },
-    { step: 2, category: 'Condicionamento', name: 'Máscara Nutritiva', brand: 'Skala'  },
-    { step: 3, category: 'Finalização',     name: 'Sérum Capilar',     brand: 'Aussie' },
-  ],
-  pernas: [
-    { step: 1, category: 'Hidratação', name: 'Loção Corporal',      brand: 'Nivea' },
-    { step: 2, category: 'Tratamento', name: 'Creme Anti-celulite', brand: 'Vichy' },
-  ],
-}
 
 function LoadingScreen() {
   return (
@@ -52,29 +53,17 @@ function LoadingScreen() {
       gap: 4, fontFamily: "'Outfit', sans-serif",
     }}>
       <style>{`
-        @keyframes float-loading {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-16px); }
-        }
+        @keyframes float-loading { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-16px); } }
         @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
         .loading-mascot { animation: float-loading 2s ease-in-out infinite, fade-in 0.5s ease; }
-        @keyframes dot-pulse {
-          0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); }
-          40% { opacity: 1; transform: scale(1); }
-        }
+        @keyframes dot-pulse { 0%, 80%, 100% { opacity: 0.2; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
         .dot1 { animation: dot-pulse 1.2s ease-in-out infinite 0s; }
         .dot2 { animation: dot-pulse 1.2s ease-in-out infinite 0.2s; }
         .dot3 { animation: dot-pulse 1.2s ease-in-out infinite 0.4s; }
       `}</style>
-      <img
-        src={`${SUPABASE}/mascote2.png`}
-        alt="Pesseguinho"
-        className="loading-mascot"
-        style={{ width: 200, height: 200, objectFit: 'contain' }}
-      />
-      <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginTop: 0 }}>
-        Pesseguinho
-      </div>
+      <img src={`${SUPABASE}/mascote2.png`} alt="Pesseguinho" className="loading-mascot"
+        style={{ width: 200, height: 200, objectFit: 'contain' }} />
+      <div style={{ fontSize: 20, fontWeight: 700, color: C.text, marginTop: 0 }}>Pesseguinho</div>
       <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
         {['dot1', 'dot2', 'dot3'].map((cls) => (
           <div key={cls} className={cls} style={{ width: 8, height: 8, borderRadius: '50%', background: C.deepPeach }} />
@@ -84,58 +73,267 @@ function LoadingScreen() {
   )
 }
 
-function ProductList({ areaId }: { areaId: string }) {
-  const [checked, setChecked] = useState<Record<number, boolean>>({})
-  const products = PRODUCTS[areaId] ?? []
-  const total = products.length
+function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (sugestoes: Sugestao[]) => void }) {
+  const [open, setOpen] = useState(false)
+  const [msgs, setMsgs] = useState<MsgChat[]>([
+    { role: 'ai', text: 'Olá! Pode me perguntar sobre sua rotina. Ex: "Minha pele está descascando, devo manter o retinal?"' }
+  ])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(false)
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [msgs])
+
+  async function enviar() {
+    if (!input.trim() || loading) return
+    const pergunta = input.trim()
+    setInput('')
+    setMsgs(m => [...m, { role: 'user', text: pergunta }])
+    setLoading(true)
+
+    const listaProdutos = produtos.map(p =>
+      `- ${p.nome} (${p.marca}) | Categoria: ${p.categoria} | Áreas: ${p.areas.join(', ')} | Período: ${p.periodos.join('/')} | Ordem: ${p.ordem} | Em uso: ${p.em_uso} | ID: ${p.id}`
+    ).join('\n')
+
+    const prompt = `Você é uma especialista em skincare. Responda em português brasileiro de forma clara e empática.
+
+Rotina atual da usuária:
+${listaProdutos || 'Nenhum produto cadastrado ainda.'}
+
+Pergunta: "${pergunta}"
+
+Responda com um JSON exato neste formato:
+{
+  "resposta": "sua resposta explicativa aqui",
+  "sugestoes": [
+    {
+      "produto_id": "id do produto",
+      "nome": "nome do produto",
+      "acao": "pausar" ou "reativar" ou "mudar_ordem" ou "mudar_periodo",
+      "valor": número para mudar_ordem, ou "Manha"/"Noite" para mudar_periodo
+    }
+  ]
+}
+
+Se não houver sugestões de mudança, retorne "sugestoes": [].
+Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: 'application/json' }
+          })
+        }
+      )
+      const data = await res.json()
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+      const parsed = JSON.parse(text)
+      setMsgs(m => [...m, {
+        role: 'ai',
+        text: parsed.resposta,
+        sugestoes: parsed.sugestoes?.length > 0 ? parsed.sugestoes : undefined
+      }])
+    } catch {
+      setMsgs(m => [...m, { role: 'ai', text: 'Desculpe, não consegui processar sua pergunta. Tente novamente.' }])
+    }
+    setLoading(false)
+  }
+
+  return (
+    <>
+      {/* Botão flutuante do chat */}
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          position: 'fixed', bottom: 90, right: 20,
+          width: 52, height: 52, borderRadius: '50%',
+          background: `linear-gradient(135deg, ${C.deepPeach}, #FF6B35)`,
+          border: 'none', cursor: 'pointer',
+          boxShadow: '0 4px 16px rgba(255,140,97,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 22, zIndex: 50,
+          transition: 'transform 0.2s',
+        }}
+        title="Perguntar à IA"
+      >✨</button>
+
+      {/* Modal do chat */}
+      {open && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'flex-end', zIndex: 100,
+        }}>
+          <div style={{
+            background: C.card, width: '100%', maxWidth: 430, margin: '0 auto',
+            borderTopLeftRadius: 28, borderTopRightRadius: 28,
+            height: '75vh', display: 'flex', flexDirection: 'column',
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px 12px', borderBottom: `1px solid ${C.border}`,
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>✨ Consultora de Skincare</div>
+                <div style={{ fontSize: 11, color: C.muted }}>Powered by Gemini</div>
+              </div>
+              <button onClick={() => setOpen(false)}
+                style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: C.muted }}>✕</button>
+            </div>
+
+            {/* Mensagens */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 16px 8px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {msgs.map((msg, i) => (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{
+                    maxWidth: '85%', padding: '10px 14px', borderRadius: 16,
+                    borderBottomRightRadius: msg.role === 'user' ? 4 : 16,
+                    borderBottomLeftRadius: msg.role === 'ai' ? 4 : 16,
+                    background: msg.role === 'user' ? C.deepPeach : C.bg,
+                    color: msg.role === 'user' ? 'white' : C.text,
+                    fontSize: 13, lineHeight: 1.5,
+                    border: msg.role === 'ai' ? `1px solid ${C.border}` : 'none',
+                  }}>
+                    {msg.text}
+                  </div>
+
+                  {/* Sugestoes da IA */}
+                  {msg.sugestoes && msg.sugestoes.length > 0 && (
+                    <div style={{
+                      marginTop: 8, background: `${C.peach}33`,
+                      borderRadius: 12, padding: '10px 14px', maxWidth: '85%',
+                      border: `1px solid ${C.peach}`,
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.deepPeach, marginBottom: 6 }}>
+                        💡 Sugestões de ajuste:
+                      </div>
+                      {msg.sugestoes.map((s, j) => (
+                        <div key={j} style={{ fontSize: 12, color: C.text, marginBottom: 4 }}>
+                          • <b>{s.nome}</b>: {
+                            s.acao === 'pausar' ? 'Pausar temporariamente' :
+                            s.acao === 'reativar' ? 'Reativar' :
+                            s.acao === 'mudar_ordem' ? `Mover para posição ${s.valor}` :
+                            `Mudar para período ${s.valor}`
+                          }
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => { onAplicar(msg.sugestoes!); setOpen(false) }}
+                        style={{
+                          marginTop: 8, width: '100%', padding: '8px',
+                          borderRadius: 10, border: 'none',
+                          background: C.deepPeach, color: 'white',
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                        }}
+                      >
+                        Aplicar sugestões ✓
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {loading && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    padding: '10px 14px', borderRadius: 16, borderBottomLeftRadius: 4,
+                    background: C.bg, border: `1px solid ${C.border}`,
+                    fontSize: 13, color: C.muted,
+                  }}>
+                    Analisando sua rotina...
+                  </div>
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
+
+            {/* Input */}
+            <div style={{
+              padding: '12px 16px 24px', borderTop: `1px solid ${C.border}`,
+              display: 'flex', gap: 8,
+            }}>
+              <input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && enviar()}
+                placeholder="Ex: minha pele está descascando..."
+                style={{
+                  flex: 1, padding: '10px 14px', borderRadius: 20,
+                  border: `1.5px solid ${C.border}`, fontSize: 13,
+                  background: C.bg, outline: 'none', color: C.text,
+                  fontFamily: 'inherit',
+                }}
+              />
+              <button onClick={enviar} disabled={!input.trim() || loading}
+                style={{
+                  width: 40, height: 40, borderRadius: '50%', border: 'none',
+                  background: input.trim() ? C.deepPeach : C.border,
+                  color: 'white', fontSize: 16, cursor: input.trim() ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0,
+                }}>→</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  )
+}
+
+function ProductList({ produtos }: { produtos: Produto[] }) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({})
+  const total = produtos.length
   const done = Object.values(checked).filter(Boolean).length
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div style={{ height: 4, background: C.border, borderRadius: 2, marginBottom: 8, overflow: 'hidden' }}>
         <div style={{
-          height: '100%',
-          width: `${total > 0 ? (done / total) * 100 : 0}%`,
-          background: C.green,
-          transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          height: '100%', width: `${total > 0 ? (done / total) * 100 : 0}%`,
+          background: C.green, transition: 'width 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
         }} />
       </div>
-      {products.map((p) => {
-        const isChecked = checked[p.step] ?? false
+      {produtos.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '20px 0', color: C.muted, fontSize: 13 }}>
+          Nenhum produto cadastrado para esta área e período.
+        </div>
+      )}
+      {produtos.map((p) => {
+        const isChecked = checked[p.id] ?? false
         return (
-          <div
-            key={p.step}
-            onClick={() => setChecked((prev) => ({ ...prev, [p.step]: !isChecked }))}
+          <div key={p.id} onClick={() => setChecked(prev => ({ ...prev, [p.id]: !isChecked }))}
             style={{
               display: 'flex', alignItems: 'center', gap: 12,
-              background: C.card,
-              border: `1.5px solid ${isChecked ? C.green : C.border}`,
+              background: C.card, border: `1.5px solid ${isChecked ? C.green : C.border}`,
               borderRadius: 16, padding: '12px 16px', cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              opacity: isChecked ? 0.7 : 1,
+              transition: 'all 0.2s ease', opacity: isChecked ? 0.7 : 1,
               transform: isChecked ? 'scale(0.98)' : 'scale(1)',
-            }}
-          >
+            }}>
             <div style={{
               width: 28, height: 28, borderRadius: 8, flexShrink: 0,
               background: isChecked ? C.green : C.peach,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 13, fontWeight: 800,
-              color: isChecked ? 'white' : C.deepPeach,
-            }}>
-              {p.step}
-            </div>
+              fontSize: 13, fontWeight: 800, color: isChecked ? 'white' : C.deepPeach,
+            }}>{p.ordem}</div>
             <div style={{ flex: 1 }}>
               <div style={{
                 fontSize: 13, fontWeight: 700, color: C.text,
-                textDecoration: isChecked ? 'line-through' : 'none',
-                opacity: isChecked ? 0.5 : 1,
-              }}>
-                {p.category}
-              </div>
+                textDecoration: isChecked ? 'line-through' : 'none', opacity: isChecked ? 0.5 : 1,
+              }}>{p.categoria}</div>
               <div style={{ fontSize: 11, color: C.muted }}>
-                {p.brand} · <span style={{ fontWeight: 500 }}>{p.name}</span>
+                {p.marca} · <span style={{ fontWeight: 500 }}>{p.nome}</span>
               </div>
+              {p.descricao_ia && (
+                <div style={{ fontSize: 10, color: C.muted, marginTop: 2, fontStyle: 'italic' }}>
+                  {p.descricao_ia.slice(0, 60)}{p.descricao_ia.length > 60 ? '…' : ''}
+                </div>
+              )}
             </div>
             <div style={{
               width: 20, height: 20, borderRadius: 6, flexShrink: 0,
@@ -159,6 +357,7 @@ function ProductList({ areaId }: { areaId: string }) {
 export default function Rotina() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id)
   const [isLoading, setIsLoading] = useState(true)
+  const [produtos, setProdutos] = useState<Produto[]>([])
   const [periodo, setPeriodo] = useState<'manha' | 'noite'>(() => {
     const hora = new Date().getHours()
     return hora >= 6 && hora < 18 ? 'manha' : 'noite'
@@ -172,16 +371,51 @@ export default function Rotina() {
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    carregarProdutos()
+  }, [])
+
+  async function carregarProdutos() {
+    const { data } = await supabase
+      .from('produtos')
+      .select('*')
+      .eq('em_uso', true)
+      .order('ordem', { ascending: true })
+    setProdutos(data ?? [])
+  }
+
+  async function aplicarSugestoes(sugestoes: Sugestao[]) {
+    for (const s of sugestoes) {
+      if (s.acao === 'pausar') {
+        await supabase.from('produtos').update({ em_uso: false }).eq('id', s.produto_id)
+      } else if (s.acao === 'reativar') {
+        await supabase.from('produtos').update({ em_uso: true }).eq('id', s.produto_id)
+      } else if (s.acao === 'mudar_ordem') {
+        await supabase.from('produtos').update({ ordem: s.valor }).eq('id', s.produto_id)
+      } else if (s.acao === 'mudar_periodo') {
+        const p = produtos.find(p => p.id === s.produto_id)
+        if (p) {
+          const novosPeriodos = s.valor === 'Manha' ? ['Manha'] : ['Noite']
+          await supabase.from('produtos').update({ periodos: novosPeriodos }).eq('id', s.produto_id)
+        }
+      }
+    }
+    carregarProdutos()
+  }
+
   if (isLoading) return <LoadingScreen />
+
+  const produtosFiltrados = produtos.filter(p =>
+    p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '') &&
+    p.periodos.includes(periodo === 'manha' ? 'Manha' : 'Noite')
+  )
 
   const current = AREAS.find((a) => a.id === activeTab)!
 
   return (
     <div style={{
-      fontFamily: "'Outfit', sans-serif",
-      background: C.bg, minHeight: '100vh',
-      maxWidth: 430, margin: '0 auto',
-      display: 'flex', flexDirection: 'column',
+      fontFamily: "'Outfit', sans-serif", background: C.bg, minHeight: '100vh',
+      maxWidth: 430, margin: '0 auto', display: 'flex', flexDirection: 'column',
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
@@ -195,22 +429,18 @@ export default function Rotina() {
             Rotina {periodo === 'manha' ? 'Manhã' : 'Noite'}
           </div>
           <div style={{
-            display: 'flex', marginTop: 8,
-            background: C.border, borderRadius: 20,
-            padding: 3, gap: 2, width: 'fit-content',
+            display: 'flex', marginTop: 8, background: C.border,
+            borderRadius: 20, padding: 3, gap: 2, width: 'fit-content',
           }}>
             {(['manha', 'noite'] as const).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriodo(p)}
+              <button key={p} onClick={() => setPeriodo(p)}
                 style={{
                   padding: '4px 12px', borderRadius: 16, border: 'none',
                   cursor: 'pointer', fontSize: 11, fontWeight: 700,
                   background: periodo === p ? C.deepPeach : 'transparent',
                   color: periodo === p ? 'white' : C.muted,
                   transition: 'all 0.2s',
-                }}
-              >
+                }}>
                 {p === 'manha' ? '☀️ Manhã' : '🌙 Noite'}
               </button>
             ))}
@@ -231,19 +461,12 @@ export default function Rotina() {
             />
           </div>
           <button
-            onClick={() => {
-              import('../hooks/useAuth').then(({ useAuth }) => {
-                // logout via reload para simplicidade
-              })
-              localStorage.clear()
-              window.location.href = '/login'
-            }}
+            onClick={() => { localStorage.clear(); window.location.href = '/login' }}
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               fontSize: 10, color: C.muted,
               display: 'flex', alignItems: 'center', gap: 3, padding: 0,
-            }}
-          >
+            }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
@@ -253,20 +476,13 @@ export default function Rotina() {
       </div>
 
       {/* Tabs */}
-      <div style={{
-        display: 'flex', justifyContent: 'center',
-        gap: 6, padding: '0 16px 16px',
-        overflowX: 'auto', scrollbarWidth: 'none',
-      }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '0 16px 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         {AREAS.map((area) => {
           const isActive = area.id === activeTab
           return (
-            <button
-              key={area.id}
-              onClick={() => setActiveTab(area.id)}
+            <button key={area.id} onClick={() => setActiveTab(area.id)}
               style={{
-                flexShrink: 0,
-                display: 'flex', flexDirection: 'column',
+                flexShrink: 0, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
                 gap: 4, padding: '8px 10px', borderRadius: 16,
                 border: isActive ? 'none' : `1.5px solid ${C.border}`,
@@ -274,18 +490,14 @@ export default function Rotina() {
                 background: isActive ? C.deepPeach : C.card,
                 boxShadow: isActive ? `0 4px 12px ${C.deepPeach}44` : 'none',
                 transition: 'all 0.2s ease',
-              }}
-            >
+              }}>
               <div style={{ width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img
-                  src={area.icon}
-                  alt={area.label}
+                <img src={area.icon} alt={area.label}
                   style={{
                     width: 28, height: 28, objectFit: 'contain',
                     filter: isActive ? 'brightness(0) invert(1)' : 'none',
                     transition: 'filter 0.2s',
-                  }}
-                />
+                  }} />
               </div>
               <span style={{ fontSize: 10, fontWeight: 700, color: isActive ? 'white' : C.muted, lineHeight: 1 }}>
                 {area.label}
@@ -297,7 +509,7 @@ export default function Rotina() {
 
       {/* Card conteúdo */}
       <div style={{
-        flex: 1, padding: '24px 20px',
+        flex: 1, padding: '24px 20px 100px',
         background: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32,
         boxShadow: '0 -8px 24px rgba(0,0,0,0.04)',
       }}>
@@ -305,15 +517,16 @@ export default function Rotina() {
           <span style={{
             background: `${C.peach}44`, color: C.deepPeach,
             padding: '4px 12px', borderRadius: 10, fontSize: 11, fontWeight: 800,
-          }}>
-            {current.label.toUpperCase()}
-          </span>
+          }}>{current.label.toUpperCase()}</span>
           <span style={{ fontSize: 11, color: C.muted }}>
-            {(PRODUCTS[current.id] ?? []).length} produtos
+            {produtosFiltrados.length} produtos
           </span>
         </div>
-        <ProductList areaId={current.id} />
+        <ProductList produtos={produtosFiltrados} />
       </div>
+
+      {/* Chat IA */}
+      <ChatIA produtos={produtos} onAplicar={aplicarSugestoes} />
     </div>
   )
 }
