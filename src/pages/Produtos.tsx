@@ -465,9 +465,9 @@ export default function Produtos() {
             flexShrink: 0,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: 4, padding: '8px 10px', borderRadius: 16,
+            gap: 3, padding: '7px 8px', borderRadius: 14,
             border: filtroArea === null ? 'none' : `1.5px solid ${C.border}`,
-            cursor: 'pointer', minWidth: 64,
+            cursor: 'pointer', minWidth: 52,
             background: filtroArea === null ? C.deepPeach : C.card,
             boxShadow: filtroArea === null ? `0 4px 12px ${C.deepPeach}44` : 'none',
             transition: 'all 0.2s ease',
@@ -494,7 +494,7 @@ export default function Produtos() {
               <img
                 src={AREA_ICONS[area]}
                 style={{
-                  width: 28, height: 28, objectFit: 'contain',
+                  width: 24, height: 24, objectFit: 'contain',
                   filter: filtroArea === area ? 'brightness(0) invert(1)' : 'none',
                   transition: 'filter 0.2s',
                 }}
