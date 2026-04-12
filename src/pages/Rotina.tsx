@@ -546,7 +546,7 @@ function WeeklyStrip({ dataAtiva, semanaOffset, onSelectData, onChangeSemana }: 
       </div>
 
       {/* Dias */}
-      <div style={{ display: 'flex', gap: 6 }}>
+      <div style={{ display: 'flex', gap: 2 }}>
         {dias.map((d, i) => {
           const isAtivo = d.toDateString() === dataAtiva.toDateString()
           const isHojeReal = d.toDateString() === hoje.toDateString()
@@ -554,21 +554,27 @@ function WeeklyStrip({ dataAtiva, semanaOffset, onSelectData, onChangeSemana }: 
             <button key={i} onClick={() => onSelectData(d)}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column',
-                alignItems: 'center', gap: 4, padding: '8px 0',
-                borderRadius: 14, border: 'none', cursor: 'pointer',
-                background: isAtivo ? C.deepPeach : C.card,
-                boxShadow: isAtivo ? `0 4px 10px ${C.deepPeach}44` : `0 1px 4px rgba(0,0,0,0.05)`,
+                alignItems: 'center', gap: 2, padding: '4px 0',
+                border: 'none', cursor: 'pointer',
+                background: 'transparent',
                 transition: 'all 0.2s',
                 minWidth: 0,
               }}>
-              <span style={{ fontSize: 9, fontWeight: 700, color: isAtivo ? 'rgba(255,255,255,0.8)' : C.muted }}>
+              <span style={{ fontSize: 9, fontWeight: 600, color: C.muted, letterSpacing: 0.5 }}>
                 {LETRAS[i]}
               </span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: isAtivo ? 'white' : C.text }}>
-                {d.getDate()}
-              </span>
               <div style={{
-                width: 5, height: 5, borderRadius: '50%',
+                width: 30, height: 30, borderRadius: '50%',
+                background: isAtivo ? C.deepPeach : 'transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'background 0.2s',
+              }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: isAtivo ? 'white' : C.text }}>
+                  {d.getDate()}
+                </span>
+              </div>
+              <div style={{
+                width: 4, height: 4, borderRadius: '50%',
                 background: isHojeReal ? C.green : 'transparent',
               }} />
             </button>
@@ -717,7 +723,7 @@ export default function Rotina() {
             <img
               src={periodo === 'manha' ? `${SUPABASE}/mascote-manha.png` : `${SUPABASE}/mascote-noite.png`}
               alt="Pesseguinho"
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: periodo === 'manha' ? 'scale(1.25)' : 'scale(1.18)' }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = `${SUPABASE}/mascote2.png` }}
             />
           </div>
@@ -744,6 +750,7 @@ export default function Rotina() {
       )}
 
       {/* Weekly Strip */}
+      <div style={{ marginBottom: 24 }}>
       <WeeklyStrip
         dataAtiva={dataAtiva}
         semanaOffset={semanaOffset}
@@ -756,7 +763,7 @@ export default function Rotina() {
           seg.setDate(seg.getDate() - dow + o * 7)
           setDataAtiva(seg)
         }}
-      />
+      /></div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
