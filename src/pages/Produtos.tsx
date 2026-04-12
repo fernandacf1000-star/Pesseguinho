@@ -222,7 +222,7 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
       <div style={{
         background: C.card, width: '100%', maxWidth: 430, margin: '0 auto',
         borderTopLeftRadius: 28, borderTopRightRadius: 28,
-        padding: '24px 20px 40px', maxHeight: '90vh', overflowY: 'auto',
+        padding: '24px 20px 60px', maxHeight: '92vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20 }}>
           <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>
@@ -459,15 +459,15 @@ export default function Produtos() {
       </div>
 
       {/* Filtros por área — igual ao estilo da Rotina */}
-      <div style={{ display: 'flex', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: 4, padding: '0 12px 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button onClick={() => setFiltroArea(null)}
           style={{
             flexShrink: 0,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            gap: 3, padding: '7px 8px', borderRadius: 14,
+            gap: 2, padding: '6px 6px', borderRadius: 14,
             border: filtroArea === null ? 'none' : `1.5px solid ${C.border}`,
-            cursor: 'pointer', minWidth: 52,
+            cursor: 'pointer', minWidth: 48,
             background: filtroArea === null ? C.deepPeach : C.card,
             boxShadow: filtroArea === null ? `0 4px 12px ${C.deepPeach}44` : 'none',
             transition: 'all 0.2s ease',
