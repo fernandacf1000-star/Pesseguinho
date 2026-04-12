@@ -121,6 +121,11 @@ Se não houver sugestões de mudança, retorne "sugestoes": [].
 Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
 
     try {
+      if (!GEMINI_KEY) {
+        setMsgs(m => [...m, { role: 'ai', text: 'Chave da IA não configurada. Verifique as variáveis de ambiente no Vercel.' }])
+        setLoading(false)
+        return
+      }
       const res = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
         {
@@ -133,15 +138,25 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
         }
       )
       const data = await res.json()
+      if (data.error) {
+        setMsgs(m => [...m, { role: 'ai', text: `Erro da IA: ${data.error.message}` }])
+        setLoading(false)
+        return
+      }
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-      const parsed = JSON.parse(text)
-      setMsgs(m => [...m, {
-        role: 'ai',
-        text: parsed.resposta,
-        sugestoes: parsed.sugestoes?.length > 0 ? parsed.sugestoes : undefined
-      }])
-    } catch {
-      setMsgs(m => [...m, { role: 'ai', text: 'Desculpe, não consegui processar sua pergunta. Tente novamente.' }])
+      try {
+        const parsed = JSON.parse(text)
+        setMsgs(m => [...m, {
+          role: 'ai',
+          text: parsed.resposta,
+          sugestoes: parsed.sugestoes?.length > 0 ? parsed.sugestoes : undefined
+        }])
+      } catch {
+        setMsgs(m => [...m, { role: 'ai', text: text || 'Não consegui interpretar a resposta.' }])
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erro desconhecido'
+      setMsgs(m => [...m, { role: 'ai', text: `Erro: ${msg}` }])
     }
     setLoading(false)
   }
@@ -185,7 +200,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
                 <img
                   src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-drpesse.png"
                   alt="Dr. Pesse"
-                  style={{ width: 64, height: 64, objectFit: 'contain' }}
+                  style={{ width: 80, height: 80, objectFit: 'contain' }}
                 />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>Dr. Pessê 🍑</div>
