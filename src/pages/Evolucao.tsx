@@ -10,12 +10,14 @@ const C = {
 const SUPABASE_URL = 'https://pbluwnkettebcfpvumio.supabase.co'
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY
 
+const ASSETS = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets'
+
 const AREAS = [
-  { id: 'rosto',  label: 'Rosto',  emoji: '🧖‍♀️' },
-  { id: 'colo',   label: 'Colo',   emoji: '✨' },
-  { id: 'costas', label: 'Costas', emoji: '🪷' },
-  { id: 'cabelo', label: 'Cabelo', emoji: '💆‍♀️' },
-  { id: 'pernas', label: 'Pernas', emoji: '🌸' },
+  { id: 'rosto',  label: 'Rosto',  icon: `${ASSETS}/icon-rosto.png`  },
+  { id: 'colo',   label: 'Colo',   icon: `${ASSETS}/icon-colo.png`   },
+  { id: 'costas', label: 'Costas', icon: `${ASSETS}/icon-costas.png` },
+  { id: 'cabelo', label: 'Cabelo', icon: `${ASSETS}/icon-cabelo.png` },
+  { id: 'pernas', label: 'Pernas', icon: `${ASSETS}/icon-pernas.png` },
 ]
 
 type Foto = {
@@ -171,7 +173,10 @@ function AreaDetail({
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}>←</button>
-        <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>{area.emoji} {area.label}</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: C.text, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <img src={area.icon} style={{ width: 24, height: 24, objectFit: 'contain' }} />
+          {area.label}
+        </div>
       </div>
 
       {fotosSorted.length >= 2 && (
@@ -318,7 +323,7 @@ export default function Evolucao() {
   return (
     <div style={{
       fontFamily: "'Outfit', sans-serif", background: C.bg, minHeight: '100vh',
-      maxWidth: 430, margin: '0 auto', paddingBottom: 100,
+      maxWidth: 430, margin: '0 auto', display: 'flex', flexDirection: 'column',
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
@@ -338,6 +343,7 @@ export default function Evolucao() {
         flex: 1, padding: '0 20px',
         background: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32,
         boxShadow: '0 -8px 24px rgba(0,0,0,0.04)', paddingTop: 24,
+        flex: 1, paddingBottom: 120,
       }}>
         {areaAtiva ? (
           <>
@@ -393,7 +399,7 @@ export default function Evolucao() {
                   }}>
                     {ultima?.signed_url
                       ? <img src={ultima.signed_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ fontSize: 24 }}>{area.emoji}</span>
+                      : <img src={area.icon} style={{ width: 32, height: 32, objectFit: 'contain' }} />
                     }
                   </div>
                   <div style={{ flex: 1 }}>
