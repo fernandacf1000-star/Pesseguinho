@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuth } from './hooks/useAuth'
 import BottomNav from './components/BottomNav'
 import LoadingScreen from './components/LoadingScreen'
+import Tutorial from './components/Tutorial'
 import AuthPage from './pages/AuthPage'
 import Rotina from './pages/Rotina'
 import Produtos from './pages/Produtos'
@@ -25,7 +26,17 @@ const Placeholder = ({ label }: { label: string }) => (
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { authState } = useAuth()
+  const [viuTutorial, setViuTutorial] = useState(!!localStorage.getItem('pesseguinho_tutorial'))
+
   if (authState.status === 'unauthenticated') return <Navigate to="/login" replace />
+
+  if (!viuTutorial) {
+    return <Tutorial onFinish={() => {
+      localStorage.setItem('pesseguinho_tutorial', 'true')
+      setViuTutorial(true)
+    }} />
+  }
+
   return <>{children}</>
 }
 
