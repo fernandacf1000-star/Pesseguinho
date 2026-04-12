@@ -224,7 +224,16 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
                     fontSize: 13, lineHeight: 1.5,
                     border: msg.role === 'ai' ? `1px solid ${C.border}` : 'none',
                   }}>
-                    {msg.text}
+                    {msg.role === 'ai' ? (
+                      <span dangerouslySetInnerHTML={{ __html: msg.text
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                        .replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
+                        .replace(/^[*-] (.+)$/gm, '• $1')
+                        .replace(/
+/g, '<br/>')
+                      }} />
+                    ) : msg.text}
                   </div>
 
                   {/* Sugestoes da IA */}
