@@ -343,7 +343,7 @@ export default function Evolucao() {
         flex: 1, padding: '0 20px',
         background: 'white', borderTopLeftRadius: 32, borderTopRightRadius: 32,
         boxShadow: '0 -8px 24px rgba(0,0,0,0.04)', paddingTop: 24,
-        flex: 1, paddingBottom: 120,
+        paddingBottom: 120,
       }}>
         {areaAtiva ? (
           <>
