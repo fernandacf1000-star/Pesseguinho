@@ -8,6 +8,8 @@ const C = {
   muted: '#A89D98', card: '#FFFFFF', border: '#FFE5D4',
 }
 
+const MASCOTE = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png'
+
 type Mode = 'login' | 'signup'
 
 export default function AuthPage() {
@@ -63,9 +65,12 @@ export default function AuthPage() {
   return (
     <div style={{
       fontFamily: "'Outfit', sans-serif",
-      background: C.bg, minHeight: '100vh',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
+      background: C.bg,
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
       padding: '24px 20px',
     }}>
       <style>{`
@@ -75,36 +80,21 @@ export default function AuthPage() {
         .auth-btn:active { transform: scale(0.98); }
         @keyframes float {
           0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-12px); }
+          50% { transform: translateY(-10px); }
         }
-        .mascot-float {
-          animation: float 3.5s ease-in-out infinite;
-        }
+        .mascot-float { animation: float 3.5s ease-in-out infinite; }
       `}</style>
 
-      <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div className="mascot-float" style={{ marginBottom: 8 }}>
+      <div style={{ textAlign: 'center', marginBottom: -50 }}>
+        <div className="mascot-float">
           <img
-            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/IMG_1192.png"
+            src={MASCOTE}
             alt="Pesseguinho"
-            style={{
-              width: 160,
-              height: 160,
-              objectFit: 'contain',
-              mixBlendMode: 'multiply',
-              display: 'block',
-              margin: '0 auto',
-            }}
+            style={{ width: 200, height: 200, objectFit: 'contain', display: 'block', margin: '0 auto' }}
           />
         </div>
         <div style={{ fontSize: 26, fontWeight: 700, color: C.text }}>Pesseguinho</div>
-        <div style={{
-          fontSize: 13,
-          color: C.deepPeach,
-          marginTop: 4,
-          fontStyle: 'italic',
-          letterSpacing: '0.02em',
-        }}>
+        <div style={{ fontSize: 12, color: C.deepPeach, marginTop: 4, fontStyle: 'italic', letterSpacing: '0.02em' }}>
           Sua pele como p&ecirc;ssego &#129392;
         </div>
       </div>
@@ -115,6 +105,7 @@ export default function AuthPage() {
         border: `1.5px solid ${C.border}`,
         padding: '28px 24px',
         boxShadow: '0 8px 32px rgba(255,203,173,0.15)',
+        marginTop: 70,
       }}>
         <div style={{
           display: 'flex', background: C.bg, borderRadius: 12,
@@ -139,15 +130,11 @@ export default function AuthPage() {
 
         <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>
-              Email
-            </label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>Email</label>
             <input
-              type="email"
-              value={email}
+              type="email" value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu@email.com"
-              required
+              placeholder="seu@email.com" required
               style={{
                 width: '100%', padding: '11px 14px', borderRadius: 12,
                 border: `1.5px solid ${C.border}`, fontSize: 14,
@@ -156,16 +143,12 @@ export default function AuthPage() {
             />
           </div>
           <div>
-            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>
-              Senha
-            </label>
+            <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, display: 'block', marginBottom: 4 }}>Senha</label>
             <input
-              type="password"
-              value={password}
+              type="password" value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={mode === 'signup' ? 'Minimo 6 caracteres' : ''}
-              required
-              minLength={6}
+              required minLength={6}
               style={{
                 width: '100%', padding: '11px 14px', borderRadius: 12,
                 border: `1.5px solid ${C.border}`, fontSize: 14,
@@ -189,10 +172,7 @@ export default function AuthPage() {
             }}>{success}</div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="auth-btn"
+          <button type="submit" disabled={loading} className="auth-btn"
             style={{
               width: '100%', padding: '13px', borderRadius: 14, border: 'none',
               background: loading ? C.peach : C.deepPeach,
@@ -200,8 +180,7 @@ export default function AuthPage() {
               cursor: loading ? 'default' : 'pointer',
               transition: 'all 0.2s', marginTop: 4,
               boxShadow: loading ? 'none' : '0 4px 14px rgba(255,140,97,0.35)',
-            }}
-          >
+            }}>
             {loading ? '...' : mode === 'login' ? 'Entrar' : 'Criar conta'}
           </button>
         </form>
@@ -212,18 +191,14 @@ export default function AuthPage() {
           <div style={{ flex: 1, height: 1, background: C.border }} />
         </div>
 
-        <button
-          onClick={handleGoogle}
-          disabled={loading}
-          className="auth-btn"
+        <button onClick={handleGoogle} disabled={loading} className="auth-btn"
           style={{
             width: '100%', padding: '12px', borderRadius: 14,
             border: `1.5px solid ${C.border}`,
             background: 'white', cursor: loading ? 'default' : 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
             fontSize: 13, fontWeight: 600, color: C.text, transition: 'all 0.2s',
-          }}
-        >
+          }}>
           <svg width="18" height="18" viewBox="0 0 18 18">
             <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
             <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
