@@ -83,20 +83,21 @@ export default function AuthPage() {
       `}</style>
 
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div className="mascot-float" style={{ marginBottom: -50 }}>
+        <div className="mascot-float" style={{ marginBottom: 8 }}>
           <img
-            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote2.png"
+            src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/IMG_1192.png"
             alt="Pesseguinho"
             style={{
-              width: 200,
-              height: 200,
+              width: 160,
+              height: 160,
               objectFit: 'contain',
+              mixBlendMode: 'multiply',
               display: 'block',
               margin: '0 auto',
             }}
           />
         </div>
-        <div style={{ fontSize: 26, fontWeight: 700, color: C.text, marginTop: 0 }}>Pesseguinho</div>
+        <div style={{ fontSize: 26, fontWeight: 700, color: C.text }}>Pesseguinho</div>
         <div style={{
           fontSize: 13,
           color: C.deepPeach,
