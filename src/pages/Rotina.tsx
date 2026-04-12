@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
 const C = {
@@ -461,10 +462,51 @@ function ProductList({ produtos, peleSensivel }: { produtos: Produto[], peleSens
   )
 }
 
+
+function PhotoAlertBanner({ onDismiss }: { onDismiss: () => void }) {
+  const navigate = useNavigate()
+  return (
+    <div style={{
+      margin: '0 20px 16px',
+      background: `${C.peach}33`,
+      border: `1.5px solid ${C.peach}`,
+      borderRadius: 18, padding: '14px 16px',
+      display: 'flex', alignItems: 'flex-start', gap: 12,
+    }}>
+      <span style={{ fontSize: 28, flexShrink: 0 }}>📸</span>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+          Dr. Pessê quer ver seu glow! ✨
+        </div>
+        <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>
+          Já faz 15 dias desde sua última foto.
+        </div>
+        <button
+          onClick={() => navigate('/evolucao')}
+          style={{
+            padding: '7px 16px', borderRadius: 12, border: 'none',
+            background: C.deepPeach, color: 'white',
+            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+          }}>
+          Tirar Foto
+        </button>
+      </div>
+      <button
+        onClick={onDismiss}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 16, color: C.muted, flexShrink: 0, lineHeight: 1,
+          padding: 0,
+        }}>✕</button>
+    </div>
+  )
+}
+
 export default function Rotina() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [peleSensivel, setPeleSensivel] = useState(false)
+  const [showPhotoAlert, setShowPhotoAlert] = useState(false)
   const [periodo, setPeriodo] = useState<'manha' | 'noite'>(() => {
     const hora = new Date().getHours()
     return hora >= 6 && hora < 18 ? 'manha' : 'noite'
@@ -475,6 +517,24 @@ export default function Rotina() {
 
   useEffect(() => {
     carregarProdutos()
+  }, [])
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissedPhotoAlert')
+    if (dismissed) {
+      const daysSince = (Date.now() - Number(dismissed)) / 86400000
+      if (daysSince < 15) return
+    }
+    supabase
+      .from('evolucao_fotos')
+      .select('data_foto')
+      .order('data_foto', { ascending: false })
+      .limit(1)
+      .then(({ data }) => {
+        if (!data || data.length === 0) return
+        const days = (Date.now() - new Date(data[0].data_foto).getTime()) / 86400000
+        if (days > 15) setShowPhotoAlert(true)
+      })
   }, [])
 
   async function carregarProdutos() {
@@ -574,6 +634,13 @@ export default function Rotina() {
           </button>
         </div>
       </div>
+
+      {showPhotoAlert && (
+        <PhotoAlertBanner onDismiss={() => {
+          localStorage.setItem('dismissedPhotoAlert', String(Date.now()))
+          setShowPhotoAlert(false)
+        }} />
+      )}
 
       {/* Tabs */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
