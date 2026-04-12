@@ -1,4 +1,3 @@
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
@@ -7,6 +6,7 @@ import { useAuth } from './hooks/useAuth'
 import BottomNav from './components/BottomNav'
 import AuthPage from './pages/AuthPage'
 import Rotina from './pages/Rotina'
+import Produtos from './pages/Produtos'
 
 const qc = new QueryClient()
 
@@ -23,7 +23,12 @@ const Placeholder = ({ label }: { label: string }) => (
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { authState } = useAuth()
   if (authState.status === 'loading') {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#FFFBF5', fontSize: 36 }}>🍑</div>
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: '100vh', background: '#FFFBF5', fontSize: 36,
+      }}>🍑</div>
+    )
   }
   if (authState.status === 'unauthenticated') return <Navigate to="/login" replace />
   return <>{children}</>
@@ -38,11 +43,11 @@ function AppLayout() {
         body { background: #FFFBF5; }
       `}</style>
       <Routes>
-        <Route path="/" element={<Rotina />} />
-        <Route path="/produtos" element={<Placeholder label="Meus Produtos" />} />
+        <Route path="/"         element={<Rotina />} />
+        <Route path="/produtos" element={<Produtos />} />
         <Route path="/evolucao" element={<Placeholder label="Evolução da Pele" />} />
         <Route path="/financas" element={<Placeholder label="Finanças" />} />
-        <Route path="/analise" element={<Placeholder label="Análise IA" />} />
+        <Route path="/analise"  element={<Placeholder label="Análise IA" />} />
       </Routes>
       <BottomNav />
     </>
@@ -52,12 +57,23 @@ function AppLayout() {
 function Root() {
   const { authState } = useAuth()
   if (authState.status === 'loading') {
-    return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#FFFBF5', fontSize: 36 }}>🍑</div>
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        minHeight: '100vh', background: '#FFFBF5', fontSize: 36,
+      }}>🍑</div>
+    )
   }
   return (
     <Routes>
-      <Route path="/login" element={authState.status === 'authenticated' ? <Navigate to="/" replace /> : <AuthPage />} />
-      <Route path="/*" element={<ProtectedRoute><AppLayout /></ProtectedRoute>} />
+      <Route
+        path="/login"
+        element={authState.status === 'authenticated' ? <Navigate to="/" replace /> : <AuthPage />}
+      />
+      <Route
+        path="/*"
+        element={<ProtectedRoute><AppLayout /></ProtectedRoute>}
+      />
     </Routes>
   )
 }
