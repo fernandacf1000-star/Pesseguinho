@@ -729,14 +729,15 @@ export default function Rotina() {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{
             width: 80, height: 80, borderRadius: '50%', background: 'white',
-            border: `2.5px solid ${C.peach}`, overflow: 'hidden',
+            border: `2.5px solid ${C.peach}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(255,203,173,0.4)',
+            position: 'relative', overflow: 'visible',
           }}>
             <img
               src={periodo === 'manha' ? `${SUPABASE}/mascote-manha.png` : `${SUPABASE}/mascote-noite.png`}
               alt="Pesseguinho"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(0.92)', transformOrigin: 'center center' }}
+              style={{ width: 110, height: 110, objectFit: 'contain', position: 'absolute' }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = `${SUPABASE}/mascote2.png` }}
             />
           </div>
