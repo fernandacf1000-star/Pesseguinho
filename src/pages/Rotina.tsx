@@ -22,13 +22,14 @@ type Produto = {
   status: string
   em_uso: boolean
   descricao_ia: string
+  dias_da_semana: string[] | null
 }
 
 type Sugestao = {
   produto_id: string
   nome: string
-  acao: 'pausar' | 'reativar' | 'mudar_ordem' | 'mudar_periodo'
-  valor?: number | string
+  acao: 'pausar' | 'reativar' | 'mudar_ordem' | 'mudar_periodo' | 'mudar_dias'
+  valor?: number | string | string[]
 }
 
 type MsgChat = {
@@ -109,7 +110,7 @@ function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (suge
     setLoading(true)
 
     const listaProdutos = produtos.map(p =>
-      `- ${p.nome} (${p.marca}) | Categoria: ${p.categoria} | Áreas: ${p.areas.join(', ')} | Período: ${p.periodos.join('/')} | Ordem: ${p.ordem} | Em uso: ${p.em_uso} | ID: ${p.id}`
+      `- ${p.nome} (${p.marca}) | Categoria: ${p.categoria} | Áreas: ${p.areas.join(', ')} | Período: ${p.periodos.join('/')} | Dias: ${(p.dias_da_semana || ['Todos']).join(', ')} | Ordem: ${p.ordem} | Em uso: ${p.em_uso} | ID: ${p.id}`
     ).join('\n')
 
     const prompt = `Você é uma especialista em skincare. Responda em português brasileiro de forma direta e concisa — máximo 5 frases na resposta, sem introduções longas.
@@ -119,9 +120,12 @@ ${listaProdutos || 'Nenhum produto cadastrado ainda.'}
 
 Pergunta: "${pergunta}"
 
-Retorne SOMENTE um JSON válido, sem markdown, sem backticks, sem texto fora do JSON:
-{"resposta":"resposta curta e direta aqui","sugestoes":[{"produto_id":"id","nome":"nome","acao":"pausar|reativar|mudar_ordem|mudar_periodo","valor":null}]}
+REGRAS DE SKIN CYCLING: Se a usuária pedir ciclo de pele, roteiro semanal ou programação dos ativos, retorne sugestões com "acao":"mudar_dias" e o array de dias no "valor". Exemplos: Retinoide → ["Segunda","Sabado"], Esfoliante → ["Quarta"], Azelaico → ["Terca","Sexta"], Peptídeos/Limpeza/Proteção → ["Todos"]. Dias válidos: "Segunda","Terca","Quarta","Quinta","Sexta","Sabado","Domingo","Todos".
 
+Retorne SOMENTE um JSON válido, sem markdown, sem backticks, sem texto fora do JSON:
+{"resposta":"resposta curta e direta aqui","sugestoes":[{"produto_id":"id","nome":"nome","acao":"pausar|reativar|mudar_ordem|mudar_periodo|mudar_dias","valor":null}]}
+
+Para mudar_dias, "valor" deve ser um array: ["Segunda","Sabado"].
 Se não houver sugestões, retorne "sugestoes":[].`
 
     try {
@@ -560,15 +564,27 @@ export default function Rotina() {
           const novosPeriodos = s.valor === 'Manha' ? ['Manha'] : ['Noite']
           await supabase.from('produtos').update({ periodos: novosPeriodos }).eq('id', s.produto_id)
         }
+      } else if (s.acao === 'mudar_dias') {
+        const dias = Array.isArray(s.valor) ? s.valor : [String(s.valor)]
+        await supabase.from('produtos').update({ dias_da_semana: dias }).eq('id', s.produto_id)
       }
     }
     carregarProdutos()
   }
 
-  const produtosFiltrados = produtos.filter(p =>
-    p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '') &&
-    p.periodos.includes(periodo === 'manha' ? 'Manha' : 'Noite')
-  )
+  const DIAS_MAP: Record<number, string> = {
+    0: 'Domingo', 1: 'Segunda', 2: 'Terca',
+    3: 'Quarta', 4: 'Quinta', 5: 'Sexta', 6: 'Sabado'
+  }
+  const hoje = DIAS_MAP[new Date().getDay()]
+
+  const produtosFiltrados = produtos.filter(p => {
+    const areaOk = p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '')
+    const periodoOk = p.periodos.includes(periodo === 'manha' ? 'Manha' : 'Noite')
+    const diasProgramados = p.dias_da_semana || ['Todos']
+    const diaOk = diasProgramados.includes('Todos') || diasProgramados.includes(hoje)
+    return areaOk && periodoOk && diaOk
+  })
 
   const current = AREAS.find((a) => a.id === activeTab)!
 
