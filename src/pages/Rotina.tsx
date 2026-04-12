@@ -76,7 +76,7 @@ function LoadingScreen() {
 function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (sugestoes: Sugestao[]) => void }) {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<MsgChat[]>([
-    { role: 'ai', text: 'Olá! Sou o Dr. Pessê 🍑 Pode me perguntar qualquer coisa sobre sua rotina! Ex: "Minha pele está descascando, devo manter o retinal?"' }
+    { role: 'ai', text: 'Olá! Sou o Dr. Pessê 🍑 Pode me perguntar qualquer coisa sobre sua rotina!' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
