@@ -9,6 +9,7 @@ import AuthPage from './pages/AuthPage'
 import Rotina from './pages/Rotina'
 import Produtos from './pages/Produtos'
 import Evolucao from './pages/Evolucao'
+import Financas from './pages/Financas'
 
 const qc = new QueryClient()
 
@@ -41,7 +42,7 @@ function AppLayout() {
           <Route path="/"         element={<Rotina />} />
           <Route path="/produtos" element={<Produtos />} />
           <Route path="/evolucao" element={<Evolucao />} />
-          <Route path="/financas" element={<Placeholder label="Finanças" />} />
+          <Route path="/financas" element={<Financas />} />
           <Route path="/analise"  element={<Placeholder label="Análise IA" />} />
         </Routes>
       </div>
