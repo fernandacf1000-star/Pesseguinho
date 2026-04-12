@@ -168,12 +168,12 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
       {open && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
-          display: 'flex', alignItems: 'flex-end', zIndex: 100,
+          display: 'flex', alignItems: 'flex-end', zIndex: 200, paddingBottom: 65,
         }}>
           <div style={{
             background: C.card, width: '100%', maxWidth: 430, margin: '0 auto',
             borderTopLeftRadius: 28, borderTopRightRadius: 28,
-            height: '70dvh', maxHeight: '70vh', display: 'flex', flexDirection: 'column',
+            height: '80dvh', maxHeight: '80vh', display: 'flex', flexDirection: 'column', paddingBottom: 0,
           }}>
             {/* Header */}
             <div style={{
@@ -185,7 +185,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
                 <img
                   src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-drpesse.png"
                   alt="Dr. Pesse"
-                  style={{ width: 44, height: 44, objectFit: 'contain' }}
+                  style={{ width: 64, height: 64, objectFit: 'contain' }}
                 />
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>Dr. Pessê 🍑</div>
@@ -263,7 +263,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
 
             {/* Input */}
             <div style={{
-              padding: '12px 16px 32px', borderTop: `1px solid ${C.border}`,
+              padding: '12px 16px 16px', borderTop: `1px solid ${C.border}`,
               display: 'flex', gap: 8,
             }}>
               <input
