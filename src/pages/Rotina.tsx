@@ -229,9 +229,8 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
                         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                         .replace(/\*(.+?)\*/g, '<em>$1</em>')
                         .replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
-                        .replace(/^[*-] (.+)$/gm, '• $1')
-                        .replace(/
-/g, '<br/>')
+                        .replace(/^[*-] (.+)$/gm, '\u2022 $1')
+                        .replace(/\n/g, '<br/>')
                       }} />
                     ) : msg.text}
                   </div>
