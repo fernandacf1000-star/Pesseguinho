@@ -73,6 +73,20 @@ function LoadingScreen() {
   )
 }
 
+
+function formatMd(text: string): string {
+  return text
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/^#{1,3}\s+(.+)$/gm, '<strong style="font-size:13px;display:block;margin-top:8px">$1</strong>')
+    .replace(/^---$/gm, '<hr style="border:none;border-top:1px solid #FFE5D4;margin:8px 0"/>')
+    .replace(/^[\*\-]\s+(.+)$/gm, '<span style="display:block;padding-left:8px">• $1</span>')
+    .replace(/^\d+\.\s+(.+)$/gm, '<span style="display:block;padding-left:8px">$&</span>')
+    .replace(/\n/g, '<br/>')
+}
+
 function ChatIA({ produtos, onAplicar }: { produtos: Produto[], onAplicar: (sugestoes: Sugestao[]) => void }) {
   const [open, setOpen] = useState(false)
   const [msgs, setMsgs] = useState<MsgChat[]>([
@@ -225,13 +239,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
                     border: msg.role === 'ai' ? `1px solid ${C.border}` : 'none',
                   }}>
                     {msg.role === 'ai' ? (
-                      <span dangerouslySetInnerHTML={{ __html: msg.text
-                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                        .replace(/\*(.+?)\*/g, '<em>$1</em>')
-                        .replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
-                        .replace(/^[*-] (.+)$/gm, '\u2022 $1')
-                        .replace(/\n/g, '<br/>')
-                      }} />
+                      <span dangerouslySetInnerHTML={{ __html: formatMd(msg.text) }} />
                     ) : msg.text}
                   </div>
 
