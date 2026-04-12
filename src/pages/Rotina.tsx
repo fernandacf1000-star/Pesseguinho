@@ -669,12 +669,34 @@ export default function Rotina() {
   }
   const diaAtivo = DIAS_MAP[dataAtiva.getDay()]
 
+  // ── Lógica quinzenal do peeling ──────────────────────────────────────────
+  const ULTIMO_PEELING_REFERENCIA = new Date('2026-04-06') // domingo de referência
+  function isSemanaPeeling(data: Date): boolean {
+    const ref = ULTIMO_PEELING_REFERENCIA
+    const diffMs = data.getTime() - ref.getTime()
+    const diffSemanas = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000))
+    return diffSemanas % 2 === 0
+  }
+  const isDomingo = diaAtivo === 'Domingo'
+  const semanaPeeling = isSemanaPeeling(dataAtiva)
+  const areaLabel = AREAS.find(a => a.id === activeTab)?.label ?? ''
+  const areaComPeelingQuinzenal = areaLabel === 'Rosto' || areaLabel === 'Costas'
+
   const produtosFiltrados = produtos.filter(p => {
-    const areaOk = p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '')
+    const areaOk = p.areas.includes(areaLabel)
     const periodoOk = p.periodos.includes(periodo === 'manha' ? 'Manha' : 'Noite')
     const diasProgramados = p.dias_da_semana || ['Todos']
     const diaOk = diasProgramados.includes('Todos') || diasProgramados.includes(diaAtivo)
-    return areaOk && periodoOk && diaOk
+    if (!areaOk || !periodoOk || !diaOk) return false
+
+    // Lógica quinzenal: domingo + área com peeling
+    if (isDomingo && areaComPeelingQuinzenal && periodo === 'noite') {
+      const ehPeeling = p.categoria.toLowerCase().includes('peeling')
+      if (semanaPeeling) return ehPeeling // só mostra peeling na semana de peeling
+      if (ehPeeling) return false // esconde peeling fora da semana
+    }
+
+    return true
   })
 
   const current = AREAS.find((a) => a.id === activeTab)!
