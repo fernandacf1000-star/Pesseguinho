@@ -506,6 +506,79 @@ function PhotoAlertBanner({ onDismiss }: { onDismiss: () => void }) {
   )
 }
 
+
+function WeeklyStrip({ dataAtiva, semanaOffset, onSelectData, onChangeSemana }: {
+  dataAtiva: Date
+  semanaOffset: number
+  onSelectData: (d: Date) => void
+  onChangeSemana: (offset: number) => void
+}) {
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+
+  // Get Monday of current week + offset
+  const seg = new Date(hoje)
+  const dow = seg.getDay() === 0 ? 6 : seg.getDay() - 1
+  seg.setDate(seg.getDate() - dow + semanaOffset * 7)
+
+  const dias = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(seg)
+    d.setDate(seg.getDate() + i)
+    return d
+  })
+
+  const LETRAS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
+
+  return (
+    <div style={{ padding: '0 20px 12px' }}>
+      {/* Navegação de semana */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <button onClick={() => onChangeSemana(semanaOffset - 1)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: C.muted, padding: '4px 8px' }}>‹</button>
+        <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
+          {semanaOffset === 0 ? 'Esta semana'
+            : semanaOffset === -1 ? 'Semana passada'
+            : semanaOffset === 1 ? 'Próxima semana'
+            : `${seg.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}`}
+        </span>
+        <button onClick={() => onChangeSemana(semanaOffset + 1)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: C.muted, padding: '4px 8px' }}>›</button>
+      </div>
+
+      {/* Dias */}
+      <div style={{ display: 'flex', gap: 6 }}>
+        {dias.map((d, i) => {
+          const isAtivo = d.toDateString() === dataAtiva.toDateString()
+          const isHojeReal = d.toDateString() === hoje.toDateString()
+          return (
+            <button key={i} onClick={() => onSelectData(d)}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', gap: 4, padding: '8px 0',
+                borderRadius: 14, border: 'none', cursor: 'pointer',
+                background: isAtivo ? C.deepPeach : C.card,
+                boxShadow: isAtivo ? `0 4px 10px ${C.deepPeach}44` : `0 1px 4px rgba(0,0,0,0.05)`,
+                transition: 'all 0.2s',
+                minWidth: 0,
+              }}>
+              <span style={{ fontSize: 9, fontWeight: 700, color: isAtivo ? 'rgba(255,255,255,0.8)' : C.muted }}>
+                {LETRAS[i]}
+              </span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: isAtivo ? 'white' : C.text }}>
+                {d.getDate()}
+              </span>
+              <div style={{
+                width: 5, height: 5, borderRadius: '50%',
+                background: isHojeReal ? C.green : 'transparent',
+              }} />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function Rotina() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id)
   const [produtos, setProdutos] = useState<Produto[]>([])
@@ -516,8 +589,20 @@ export default function Rotina() {
     return hora >= 6 && hora < 18 ? 'manha' : 'noite'
   })
 
-  const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long' })
-    .replace(/^./, (c) => c.toUpperCase())
+  const [dataAtiva, setDataAtiva] = useState(new Date())
+  const [semanaOffset, setSemanaOffset] = useState(0)
+
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+
+  const isHoje = dataAtiva.toDateString() === hoje.toDateString()
+  const isAmanha = (() => { const d = new Date(hoje); d.setDate(d.getDate() + 1); return dataAtiva.toDateString() === d.toDateString() })()
+  const isOntem = (() => { const d = new Date(hoje); d.setDate(d.getDate() - 1); return dataAtiva.toDateString() === d.toDateString() })()
+
+  const diaSemana = isHoje ? 'Hoje'
+    : isAmanha ? 'Amanhã'
+    : isOntem ? 'Ontem'
+    : dataAtiva.toLocaleDateString('pt-BR', { weekday: 'long' }).replace(/^./, (c) => c.toUpperCase())
 
   useEffect(() => {
     carregarProdutos()
@@ -576,13 +661,13 @@ export default function Rotina() {
     0: 'Domingo', 1: 'Segunda', 2: 'Terca',
     3: 'Quarta', 4: 'Quinta', 5: 'Sexta', 6: 'Sabado'
   }
-  const hoje = DIAS_MAP[new Date().getDay()]
+  const diaAtivo = DIAS_MAP[dataAtiva.getDay()]
 
   const produtosFiltrados = produtos.filter(p => {
     const areaOk = p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '')
     const periodoOk = p.periodos.includes(periodo === 'manha' ? 'Manha' : 'Noite')
     const diasProgramados = p.dias_da_semana || ['Todos']
-    const diaOk = diasProgramados.includes('Todos') || diasProgramados.includes(hoje)
+    const diaOk = diasProgramados.includes('Todos') || diasProgramados.includes(diaAtivo)
     return areaOk && periodoOk && diaOk
   })
 
@@ -657,6 +742,21 @@ export default function Rotina() {
           setShowPhotoAlert(false)
         }} />
       )}
+
+      {/* Weekly Strip */}
+      <WeeklyStrip
+        dataAtiva={dataAtiva}
+        semanaOffset={semanaOffset}
+        onSelectData={(d) => { setDataAtiva(d) }}
+        onChangeSemana={(o) => {
+          setSemanaOffset(o)
+          const seg = new Date()
+          seg.setHours(0,0,0,0)
+          const dow = seg.getDay() === 0 ? 6 : seg.getDay() - 1
+          seg.setDate(seg.getDate() - dow + o * 7)
+          setDataAtiva(seg)
+        }}
+      />
 
       {/* Tabs */}
       <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
