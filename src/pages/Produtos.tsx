@@ -445,10 +445,13 @@ export default function Produtos() {
         {[null, 'Manha', 'Noite'].map(p => (
           <button key={p ?? 'todos'} onClick={() => setFiltroPeriodo(p)}
             style={{
-              padding: '5px 12px', borderRadius: 10, border: `1.5px solid ${filtroPeriodo === p ? C.deepPeach : C.border}`,
-              background: filtroPeriodo === p ? `${C.deepPeach}22` : 'transparent',
-              color: filtroPeriodo === p ? C.deepPeach : C.muted,
+              padding: '5px 14px', borderRadius: 10,
+              border: `1.5px solid ${filtroPeriodo === p ? C.deepPeach : C.border}`,
+              background: filtroPeriodo === p ? C.deepPeach : '#FFF5F0',
+              color: filtroPeriodo === p ? 'white' : C.muted,
               fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 4,
+              transition: 'all 0.2s',
             }}>
             {p === null ? 'Todos' : p === 'Manha' ? '☀️ Manhã' : '🌙 Noite'}
           </button>
@@ -459,23 +462,32 @@ export default function Produtos() {
       <div style={{ display: 'flex', gap: 8, padding: '0 20px 16px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button onClick={() => setFiltroArea(null)}
           style={{
-            flexShrink: 0, padding: '6px 12px', borderRadius: 10,
+            flexShrink: 0, padding: '6px 14px', borderRadius: 10,
             border: `1.5px solid ${filtroArea === null ? C.deepPeach : C.border}`,
-            background: filtroArea === null ? `${C.deepPeach}22` : 'transparent',
-            color: filtroArea === null ? C.deepPeach : C.muted,
+            background: filtroArea === null ? C.deepPeach : '#FFF5F0',
+            color: filtroArea === null ? 'white' : C.muted,
             fontSize: 11, fontWeight: 600, cursor: 'pointer',
+            transition: 'all 0.2s',
           }}>Todas</button>
         {AREAS_LIST.map(area => (
           <button key={area} onClick={() => setFiltroArea(area === filtroArea ? null : area)}
             style={{
-              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5,
+              flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
               padding: '6px 12px', borderRadius: 10,
               border: `1.5px solid ${filtroArea === area ? C.deepPeach : C.border}`,
-              background: filtroArea === area ? `${C.deepPeach}22` : 'transparent',
-              color: filtroArea === area ? C.deepPeach : C.muted,
+              background: filtroArea === area ? C.deepPeach : '#FFF5F0',
+              color: filtroArea === area ? 'white' : C.muted,
               fontSize: 11, fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.2s',
             }}>
-            <img src={AREA_ICONS[area]} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+            <img
+              src={AREA_ICONS[area]}
+              style={{
+                width: 16, height: 16, objectFit: 'contain',
+                filter: filtroArea === area ? 'brightness(0) invert(1)' : 'none',
+                transition: 'filter 0.2s',
+              }}
+            />
             {area}
           </button>
         ))}
@@ -486,10 +498,18 @@ export default function Produtos() {
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: C.muted }}>Carregando...</div>
         ) : filtrados.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 40 }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🧴</div>
-            <div style={{ fontSize: 14, color: C.muted }}>Nenhum produto ainda.</div>
-            <div style={{ fontSize: 12, color: C.muted }}>Toque em + para adicionar!</div>
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <img
+              src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-confuso.png"
+              alt="Pesseguinho"
+              style={{ width: 120, height: 120, objectFit: 'contain', marginBottom: 8, opacity: 0.85 }}
+            />
+            <div style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 6 }}>
+              Nenhum produto ainda
+            </div>
+            <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.5 }}>
+              Toque no botão <b style={{ color: C.deepPeach }}>+</b> para cadastrar<br />seu primeiro produto!
+            </div>
           </div>
         ) : filtrados.map(p => (
           <ProdutoCard
@@ -506,13 +526,15 @@ export default function Produtos() {
         onClick={() => { setEditando(null); setShowForm(true) }}
         style={{
           position: 'fixed', bottom: 90, right: 20,
-          width: 52, height: 52, borderRadius: '50%',
+          width: 56, height: 56, borderRadius: '50%',
           background: C.deepPeach, border: 'none', cursor: 'pointer',
-          fontSize: 24, color: 'white', fontWeight: 300,
-          boxShadow: '0 4px 16px rgba(255,140,97,0.5)',
+          fontSize: 28, color: 'white', fontWeight: 300,
+          boxShadow: '0 6px 20px rgba(255,140,97,0.55), 0 2px 8px rgba(255,140,97,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 50,
+          zIndex: 50, transition: 'transform 0.2s, box-shadow 0.2s',
         }}
+        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.08)')}
+        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
       >+</button>
 
       {/* Formulário */}
