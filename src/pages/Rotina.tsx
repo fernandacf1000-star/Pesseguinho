@@ -127,7 +127,7 @@ Só sugira mudanças quando tiver certeza que é seguro e benéfico.`
         return
       }
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -379,7 +379,6 @@ function ProductList({ produtos }: { produtos: Produto[] }) {
 
 export default function Rotina() {
   const [activeTab, setActiveTab] = useState(AREAS[0].id)
-  const [isLoading, setIsLoading] = useState(true)
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [periodo, setPeriodo] = useState<'manha' | 'noite'>(() => {
     const hora = new Date().getHours()
@@ -388,11 +387,6 @@ export default function Rotina() {
 
   const diaSemana = new Date().toLocaleDateString('pt-BR', { weekday: 'long' })
     .replace(/^./, (c) => c.toUpperCase())
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1800)
-    return () => clearTimeout(timer)
-  }, [])
 
   useEffect(() => {
     carregarProdutos()
@@ -425,8 +419,6 @@ export default function Rotina() {
     }
     carregarProdutos()
   }
-
-  if (isLoading) return <LoadingScreen />
 
   const produtosFiltrados = produtos.filter(p =>
     p.areas.includes(AREAS.find(a => a.id === activeTab)?.label ?? '') &&
