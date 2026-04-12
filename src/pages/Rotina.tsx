@@ -687,7 +687,20 @@ export default function Rotina() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: '52px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '52px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+        <button
+          onClick={() => { localStorage.clear(); window.location.href = '/login' }}
+          style={{
+            position: 'absolute', top: 16, right: 20,
+            background: 'none', border: 'none', cursor: 'pointer',
+            fontSize: 10, color: C.muted,
+            display: 'flex', alignItems: 'center', gap: 3, padding: 0,
+          }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Sair
+        </button>
         <div>
           <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>
             {diaSemana}
@@ -713,7 +726,7 @@ export default function Rotina() {
             ))}
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{
             width: 80, height: 80, borderRadius: '50%', background: 'white',
             border: `2.5px solid ${C.peach}`, overflow: 'hidden',
@@ -723,22 +736,10 @@ export default function Rotina() {
             <img
               src={periodo === 'manha' ? `${SUPABASE}/mascote-manha.png` : `${SUPABASE}/mascote-noite.png`}
               alt="Pesseguinho"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', transform: periodo === 'manha' ? 'scale(1.1) translateY(4px)' : 'scale(1.35)', transformOrigin: 'center center' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', transform: 'scale(0.92)', transformOrigin: 'center center' }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = `${SUPABASE}/mascote2.png` }}
             />
           </div>
-          <button
-            onClick={() => { localStorage.clear(); window.location.href = '/login' }}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontSize: 10, color: C.muted,
-              display: 'flex', alignItems: 'center', gap: 3, padding: 0,
-            }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke={C.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Sair
-          </button>
         </div>
       </div>
 
