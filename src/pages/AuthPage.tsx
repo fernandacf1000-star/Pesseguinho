@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { checkInvite, markInviteUsed } from '../lib/inviteList'
+import { useAuth } from '../hooks/useAuth'
 
 const C = {
   bg: '#FFFBF5', peach: '#FFCBAD', deepPeach: '#FF8C61',
@@ -13,11 +14,16 @@ const MASCOTE = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/publ
 type Mode = 'login' | 'signup'
 
 export default function AuthPage() {
+  const { authState } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(
+    authState.status === 'unauthenticated' && authState.accessDenied
+      ? 'Acesso negado: este email não é um convidado autorizado.'
+      : null
+  )
   const [success, setSuccess] = useState<string | null>(null)
 
   async function handleEmail(e: React.FormEvent) {
