@@ -57,26 +57,13 @@ export function PesseguinhoManha({ size = 56 }: MascotProps) {
 
 export function PesseguinhoNoite({ size = 56 }: MascotProps) {
   return (
-    <svg width={size} height={size} viewBox="0 0 56 56" fill="none">
-      <ellipse cx="28" cy="32" rx="18" ry="19" fill="#C5956A" />
-      <ellipse cx="22" cy="31" rx="8" ry="9" fill="#B07D55" opacity="0.5" />
-      <path d="M12 26 Q18 10 28 12 Q38 10 44 26" fill="#7B9EC5" />
-      <ellipse cx="28" cy="26" rx="16" ry="4" fill="#9AB8D9" />
-      <circle cx="40" cy="14" r="3" fill="white" opacity="0.9" />
-      <ellipse cx="28" cy="14" rx="3" ry="5" fill="#7AAD6A" />
-      <path d="M18.5 30 Q22 27.5 25.5 30" stroke="#2D3436" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <path d="M30.5 30 Q34 27.5 37.5 30" stroke="#2D3436" strokeWidth="1.8" fill="none" strokeLinecap="round" />
-      <circle cx="22" cy="30" r="4.5" stroke="#2D3436" strokeWidth="1.5" fill="none" opacity="0.6" />
-      <circle cx="34" cy="30" r="4.5" stroke="#2D3436" strokeWidth="1.5" fill="none" opacity="0.6" />
-      <line x1="26.5" y1="30" x2="29.5" y2="30" stroke="#2D3436" strokeWidth="1.5" opacity="0.6" />
-      <line x1="17.5" y1="29.5" x2="15" y2="28" stroke="#2D3436" strokeWidth="1.5" opacity="0.6" />
-      <line x1="38.5" y1="29.5" x2="41" y2="28" stroke="#2D3436" strokeWidth="1.5" opacity="0.6" />
-      <ellipse cx="17" cy="34" rx="3" ry="2" fill="#FF8C61" opacity="0.3" />
-      <ellipse cx="39" cy="34" rx="3" ry="2" fill="#FF8C61" opacity="0.3" />
-      <path d="M23 36 Q28 38.5 33 36" stroke="#2D3436" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-      <text x="4" y="18" fontSize="10" opacity="0.7">✨</text>
-      <text x="44" y="22" fontSize="8" opacity="0.5">⭐</text>
-    </svg>
+    <img
+      src="https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets/mascote-noite.png"
+      alt="Pesseguinho noite"
+      width={size}
+      height={size}
+      style={{ objectFit: 'contain' }}
+    />
   )
 }
 
@@ -109,7 +96,6 @@ export function PesseguinhoFotoAlerta({ size = 56 }: MascotProps) {
   )
 }
 
-// Helper: retorna o mascote certo pelo contexto
 export function ActiveMascot({
   period,
   showPhotoAlert,
