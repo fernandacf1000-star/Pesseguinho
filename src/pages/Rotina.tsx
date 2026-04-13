@@ -322,7 +322,7 @@ Se não houver sugestões, retorne "sugestoes":[].`
 
 const FASES = [
   { id: 'limpeza',   label: 'Limpeza & Preparo',    categorias: ['Limpeza'] },
-  { id: 'tratamento', label: 'Tratamento Específico', categorias: ['Vitamina C','Clareador','Peptídeos','Niacinamida','Sérum','Sérum Antiacne','Esfoliante','Retinoide','Tratamento','Peeling'] },
+  { id: 'tratamento', label: 'Tratamento Específico', categorias: ['Vitamina C','Clareador','Peptídeos','Niacinamida','Sérum Antiacne','Esfoliante','Retinoide','Tratamento','Peeling'] },
   { id: 'olhos',     label: 'Área dos Olhos',        categorias: ['Sérum Olhos','Creme Olhos'] },
   { id: 'reparo',    label: 'Reparo & Selagem',      categorias: ['Hidratante','Barreira/Reparador','Óleo Facial','Labial'] },
   { id: 'protecao',  label: 'Proteção',              categorias: ['Protetor Solar'] },
