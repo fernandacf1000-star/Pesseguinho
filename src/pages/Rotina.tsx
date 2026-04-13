@@ -689,11 +689,20 @@ export default function Rotina() {
     const diaOk = diasProgramados.includes('Todos') || diasProgramados.includes(diaAtivo)
     if (!areaOk || !periodoOk || !diaOk) return false
 
-    // Lógica quinzenal: domingo + área com peeling
+    // ── Lógica quinzenal corrigida: domingo + área com peeling ──────────────
     if (isDomingo && areaComPeelingQuinzenal && periodo === 'noite') {
-      const ehPeeling = p.categoria.toLowerCase().includes('peeling')
-      if (semanaPeeling) return ehPeeling // só mostra peeling na semana de peeling
-      if (ehPeeling) return false // esconde peeling fora da semana
+      const cat = p.categoria.toLowerCase()
+      const ehPeeling = cat.includes('peeling')
+      const ehAtivoForte = cat.includes('retinoide') || cat.includes('esfoliante')
+
+      if (semanaPeeling) {
+        if (ehPeeling) return true       // mostra peeling
+        if (ehAtivoForte) return false   // esconde retinoides/esfoliantes
+        return true                      // mantém limpeza, hidratante, olhos, etc.
+      } else {
+        if (ehPeeling) return false      // esconde peeling
+        return true                      // mostra rotina de recuperação normal
+      }
     }
 
     return true
