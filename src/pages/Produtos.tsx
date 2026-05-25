@@ -109,21 +109,21 @@ function ProdutoCard({ produto, onToggle, onEdit }: {
 }) {
   return (
     <div style={{
-      background: C.card, borderRadius: 16,
-      border: `1.5px solid ${produto.em_uso ? C.border : '#eee'}`,
-      padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+      background: C.card, borderRadius: 12,
+      border: `1px solid ${produto.em_uso ? C.border : '#eee'}`,
+      padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 8,
       opacity: produto.em_uso ? 1 : 0.6,
       transition: 'all 0.2s',
     }}>
       {/* Ícone da área principal */}
       <div style={{
-        width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-        background: C.bg, border: `1.5px solid ${C.border}`,
+        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+        background: C.bg, border: `1px solid ${C.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
       }}>
         {produto.areas[0] && AREA_ICONS[produto.areas[0]] ? (
-          <img src={AREA_ICONS[produto.areas[0]]} style={{ width: 32, height: 32, objectFit: 'contain' }} />
+          <img src={AREA_ICONS[produto.areas[0]]} style={{ width: 24, height: 24, objectFit: 'contain' }} />
         ) : (
           <span style={{ fontSize: 20 }}>🧴</span>
         )}
@@ -131,10 +131,10 @@ function ProdutoCard({ produto, onToggle, onEdit }: {
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {produto.nome}
         </div>
-        <div style={{ fontSize: 11, color: C.muted, marginBottom: 4 }}>{produto.marca}</div>
+        <div style={{ fontSize: 10, color: C.muted, marginBottom: 2 }}>{produto.marca}</div>
         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
           {produto.areas.slice(0, 2).map(a => (
             <span key={a} style={{
@@ -583,7 +583,7 @@ export default function Produtos() {
       </div>
 
       {/* Lista */}
-      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: C.muted }}>Carregando...</div>
         ) : filtrados.length === 0 ? (
