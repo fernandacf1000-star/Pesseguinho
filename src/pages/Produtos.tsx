@@ -569,7 +569,7 @@ export default function Produtos() {
               <img
                 src={AREA_ICONS[area]}
                 style={{
-                  width: 24, height: 24, objectFit: 'contain',
+                  width: 32, height: 32, objectFit: 'contain',
                   filter: filtroArea === area ? 'brightness(0) invert(1)' : 'none',
                   transition: 'filter 0.2s',
                 }}
