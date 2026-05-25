@@ -294,7 +294,7 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
   const handleNomeChange = (value: string) => {
     setForm(f => ({ ...f, nome: value }))
     
-    // Lookup local no banco de dados primeiro
+    // Lookup local primeiro (instantâneo)
     if (form.areas.includes('Oral') && value.trim()) {
       const lookup = MEDICAMENTOS_DB[value.toLowerCase()]
       if (lookup) {
@@ -306,7 +306,7 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
         return
       }
       
-      // Se não encontrar local, busca via Edge Function
+      // Se não achar local, tenta busca online
       buscarMedicamentoViaEdge(value)
     }
   }
@@ -319,6 +319,12 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
         `${supabaseUrl}/functions/v1/buscar-medicamento?nome=${encodeURIComponent(nome)}`,
         { method: 'GET' }
       )
+      
+      if (!response.ok) {
+        setLoadingIA(false)
+        return
+      }
+      
       const data = await response.json()
       
       if (data.principio_ativo && data.marca) {
