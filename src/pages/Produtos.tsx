@@ -56,19 +56,22 @@ async function gerarDescricaoIA(nome: string, marca: string, categoria: string, 
   const isMedicacao = areas?.includes('Oral')
 
   const prompt = isMedicacao
-    ? `Você é um especialista em medicações. Responda APENAS com JSON, sem texto extra.
+    ? `Você é um especialista em farmacologia e medicamentos. Responda APENAS com JSON, sem texto extra.
 
-Medicação: "${nome}" da marca/fabricante "${marca}"
-Áreas: ${areas.join(', ')}
-Frequência: ${periodos.join(', ')}
+Medicação informada: "${nome}" fabricante/marca: "${marca}"
 
-Se a grafia estiver errada, corrija para o nome correto da medicação.
+Instruções:
+- O nome pode estar com grafia errada ou ser um medicamento manipulado/genérico
+- Tente identificar o princípio ativo ou medicamento mais próximo pelo nome fonético
+- Se for manipulado ou genérico desconhecido, descreva com base no que o nome sugere
+- NUNCA retorne uma mensagem de erro ou "não reconhecido" — sempre forneça uma descrição útil
+- Se não tiver certeza, indique que pode ser manipulado e descreva o que o nome sugere
 
 Retorne exatamente este JSON:
 {
-  "descricao": "descrição concisa de 1-2 frases sobre a função/indicação da medicação",
-  "ordem": número de 1 a 10 indicando posição ideal (medicações orais geralmente 1-3, sempre antes de tópicos),
-  "nomeCorrigido": "nome correto da medicação se tiver erro de grafia, senão igual ao nome original"
+  "descricao": "descrição de 1-2 frases sobre a função/indicação provável desta medicação",
+  "ordem": 1,
+  "nomeCorrigido": "nome corrigido se houver erro de grafia óbvio, senão igual ao original"
 }`
     : `Você é um especialista em skincare. Responda APENAS com JSON, sem texto extra.
 
