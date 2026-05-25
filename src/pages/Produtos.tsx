@@ -537,9 +537,9 @@ export default function Produtos() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: '44px 20px 10px' }}>
+      <div style={{ padding: 'max(env(safe-area-inset-top), 8px) 20px 6px' }}>
         <div style={{ fontSize: 10, color: C.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>Minha Coleção</div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: C.text }}>Produtos</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: C.text }}>Produtos</div>
       </div>
 
       {/* Filtros por período */}
