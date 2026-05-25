@@ -205,8 +205,9 @@ export default function Financas() {
   // Wishlist (produtos com status 'acabou')
   const wishlist = produtos.filter(p => p.status === 'acabou')
 
-  // Histórico agrupado por mês
-  const porMes = compras.reduce<Record<string, Compra[]>>((acc, c) => {
+  // Histórico agrupado por mês (filtrando removidos)
+  const comprasFiltradas = compras.filter(c => c.produtos?.nome)
+  const porMes = comprasFiltradas.reduce<Record<string, Compra[]>>((acc, c) => {
     const key = new Date(c.data_compra).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
     if (!acc[key]) acc[key] = []
     acc[key].push(c)
@@ -312,10 +313,10 @@ export default function Financas() {
               <div style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
                 Histórico de compras
               </div>
-              <span style={{ fontSize: 10, color: C.muted }}>{compras.length} registros</span>
+              <span style={{ fontSize: 10, color: C.muted }}>{comprasFiltradas.length} registros</span>
             </div>
 
-            {compras.length === 0 ? (
+            {comprasFiltradas.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '30px 0', color: C.muted, fontSize: 13 }}>
                 Nenhuma compra registrada ainda.<br />
                 <span style={{ fontSize: 11 }}>Toque em + para adicionar!</span>
