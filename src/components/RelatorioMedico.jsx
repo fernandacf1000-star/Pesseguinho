@@ -132,12 +132,16 @@ export default function RelatorioMedico({ userId }) {
         const c = AREA_MAP[a] || "Outros";
         canonicals.add(c);
       });
-      canonicals.forEach(c => {
-        if (!map[c]) map[c] = [];
-        if (!map[c].find(x => x.id === p.id)) {
-          map[c].push(p);
-        }
-      });
+      // Se produto tem múltiplas áreas, usa a primeira categoria canônica
+      // Evita duplicação mantendo um único registro do produto
+      const primaryCanonical = canonicals.size > 0 
+        ? [...canonicals][0]
+        : "Outros";
+      
+      if (!map[primaryCanonical]) map[primaryCanonical] = [];
+      if (!map[primaryCanonical].find(x => x.id === p.id)) {
+        map[primaryCanonical].push(p);
+      }
     });
     return map;
   }, [produtos, mostraDermatologico, mostraUsoContinuo]);
