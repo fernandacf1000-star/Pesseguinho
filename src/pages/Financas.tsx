@@ -29,6 +29,7 @@ type Produto = {
   nome: string
   marca: string
   categoria: string
+  areas?: string[]
   status: string
   em_uso: boolean
 }
@@ -183,8 +184,8 @@ export default function Financas() {
   async function carregar() {
     setLoading(true)
     const [{ data: c }, { data: p }] = await Promise.all([
-      supabase.from('compras').select('*, produtos(id, nome, marca, categoria, status, em_uso)').order('data_compra', { ascending: false }),
-      supabase.from('produtos').select('id, nome, marca, categoria, status, em_uso').order('nome'),
+      supabase.from('compras').select('*, produtos(id, nome, marca, categoria, areas, status, em_uso)').order('data_compra', { ascending: false }),
+      supabase.from('produtos').select('id, nome, marca, categoria, areas, status, em_uso').order('nome'),
     ])
     setCompras(c ?? [])
     setProdutos(p ?? [])
