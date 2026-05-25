@@ -49,6 +49,32 @@ const EMPTY_PRODUTO = {
   em_uso: true, descricao_ia: '', principio_ativo: '',
 }
 
+// Banco de dados de medicamentos (nome comercial → princípio ativo + marca)
+const MEDICAMENTOS_DB: Record<string, { principio_ativo: string; marca: string }> = {
+  'vurtuoso': { principio_ativo: 'Vortioxetina', marca: 'Lundbeck' },
+  'trintellix': { principio_ativo: 'Vortioxetina', marca: 'Lundbeck' },
+  'brintellix': { principio_ativo: 'Vortioxetina', marca: 'Lundbeck' },
+  'lexapro': { principio_ativo: 'Escitalopram', marca: 'Lundbeck' },
+  'cipralex': { principio_ativo: 'Escitalopram', marca: 'Lundbeck' },
+  'prozac': { principio_ativo: 'Fluoxetina', marca: 'Lilly' },
+  'fluoxetina': { principio_ativo: 'Fluoxetina', marca: 'Genérico' },
+  'minoxidil': { principio_ativo: 'Minoxidil', marca: 'Rogaine/Genérico' },
+  'propecia': { principio_ativo: 'Finasterida', marca: 'Merck' },
+  'finasterida': { principio_ativo: 'Finasterida', marca: 'Genérico' },
+  'accutane': { principio_ativo: 'Isotretinoína', marca: 'Roche' },
+  'roacutan': { principio_ativo: 'Isotretinoína', marca: 'Roche' },
+  'isotretinoína': { principio_ativo: 'Isotretinoína', marca: 'Genérico' },
+  'tretinoin': { principio_ativo: 'Tretinoine', marca: 'Avita/Retin-A' },
+  'tretinoína': { principio_ativo: 'Tretinoína', marca: 'Genérico' },
+  'adapaleno': { principio_ativo: 'Adapaleno', marca: 'Galderma' },
+  'differin': { principio_ativo: 'Adapaleno', marca: 'Galderma' },
+  'metformina': { principio_ativo: 'Metformina', marca: 'Genérico' },
+  'glucofage': { principio_ativo: 'Metformina', marca: 'Merck' },
+  'levotiroxina': { principio_ativo: 'Levotiroxina', marca: 'Genérico' },
+  'puran t4': { principio_ativo: 'Levotiroxina', marca: 'Libbs' },
+  'synthroid': { principio_ativo: 'Levotiroxina', marca: 'Abbott' },
+}
+
 async function gerarDescricaoIA(nome: string, marca: string, categoria: string, areas: string[], periodos: string[], produtosExistentes: Produto[], principioAtivo?: string) {
   const key = import.meta.env.VITE_GEMINI_API_KEY
   if (!key) return null
@@ -245,6 +271,67 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
     setLoadingIA(false)
   }
 
+  const handleAutoLookup = async () => {
+    if (!form.nome || form.areas.length === 0 || !form.areas.includes('Oral')) return
+    if (form.principio_ativo) return // já preenchido
+    
+    setLoadingIA(true)
+    // Chama IA apenas para identificar o princípio ativo
+    const prompt = `Você é um especialista em farmacologia. Responda APENAS com JSON, sem texto extra.
+
+Nome comercial/medicação: "${form.nome}"
+
+Sua tarefa: identifique o princípio ativo desta medicação. Se não conseguir identificar com certeza, retorne null.
+
+Retorne exatamente este JSON:
+{
+  "principio_ativo": "nome do princípio ativo identificado, ou null se desconhecido"
+}`
+
+    try {
+      const key = import.meta.env.VITE_GEMINI_API_KEY
+      if (!key) return
+
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+          })
+        }
+      )
+      const data = await res.json()
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+      if (!text) return
+      const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+      const parsed = JSON.parse(clean)
+      if (parsed.principio_ativo) {
+        setForm(f => ({ ...f, principio_ativo: parsed.principio_ativo }))
+      }
+    } catch {
+      // falha silenciosa
+    }
+    setLoadingIA(false)
+  }
+
+  const handleNomeChange = (value: string) => {
+    setForm(f => ({ ...f, nome: value }))
+    
+    // Lookup local no banco de dados
+    if (form.areas.includes('Oral') && value.trim()) {
+      const lookup = MEDICAMENTOS_DB[value.toLowerCase()]
+      if (lookup) {
+        setForm(f => ({
+          ...f,
+          principio_ativo: lookup.principio_ativo,
+          marca: lookup.marca
+        }))
+      }
+    }
+  }
+
   return (
     <div style={{
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
@@ -270,8 +357,8 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
             </label>
             <input
               value={(form as any)[field]}
-              onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))}
-              placeholder={field === 'nome' ? 'Ex: Niacinamide 10%' : 'Ex: The Ordinary'}
+              onChange={e => field === 'nome' ? handleNomeChange(e.target.value) : setForm(f => ({ ...f, [field]: e.target.value }))}
+              placeholder={field === 'nome' ? 'Ex: Vurtuoso, Lexapro, Minoxidil' : 'Ex: Lundbeck'}
               style={{
                 width: '100%', padding: '10px 14px', borderRadius: 12, boxSizing: 'border-box',
                 border: `1.5px solid ${C.border}`, fontSize: 13, color: C.text,
