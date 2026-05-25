@@ -9,7 +9,7 @@ const C = {
 
 const SUPABASE_URL = 'https://pbluwnkettebcfpvumio.supabase.co/storage/v1/object/public/assets'
 
-const AREAS_LIST = ['Rosto', 'Colo', 'Costas', 'Pernas', 'Cabelo']
+const AREAS_LIST = ['Rosto', 'Colo', 'Costas', 'Oral', 'Cabelo']
 const PERIODOS_LIST = ['Manha', 'Noite']
 const CATEGORIAS_LIST = ['Limpeza','Vitamina C','Clareador','Peptídeos','Niacinamida','Sérum','Sérum Antiacne','Esfoliante','Retinoide','Tratamento','Peeling','Sérum Olhos','Creme Olhos','Hidratante','Barreira/Reparador','Óleo Facial','Labial','Protetor Solar']
 const STATUS_LIST = ['ativo', 'pausado', 'acabou']
@@ -18,7 +18,7 @@ const AREA_ICONS: Record<string, string> = {
   Rosto:  `${SUPABASE_URL}/icon-rosto.png`,
   Colo:   `${SUPABASE_URL}/icon-colo.png`,
   Costas: `${SUPABASE_URL}/icon-costas.png`,
-  Pernas: `${SUPABASE_URL}/icon-pernas.png`,
+  Oral: '💊',
   Cabelo: `${SUPABASE_URL}/icon-cabelo.png`,
 }
 
