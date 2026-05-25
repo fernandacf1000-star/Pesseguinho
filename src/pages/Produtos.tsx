@@ -53,8 +53,24 @@ async function gerarDescricaoIA(nome: string, marca: string, categoria: string, 
   if (!key) return null
 
   const listaProdutos = produtosExistentes.map(p => `${p.nome} (${p.categoria})`).join(', ')
+  const isMedicacao = areas?.includes('Oral')
 
-  const prompt = `Você é um especialista em skincare. Responda APENAS com JSON, sem texto extra.
+  const prompt = isMedicacao
+    ? `Você é um especialista em medicações. Responda APENAS com JSON, sem texto extra.
+
+Medicação: "${nome}" da marca/fabricante "${marca}"
+Áreas: ${areas.join(', ')}
+Frequência: ${periodos.join(', ')}
+
+Se a grafia estiver errada, corrija para o nome correto da medicação.
+
+Retorne exatamente este JSON:
+{
+  "descricao": "descrição concisa de 1-2 frases sobre a função/indicação da medicação",
+  "ordem": número de 1 a 10 indicando posição ideal (medicações orais geralmente 1-3, sempre antes de tópicos),
+  "nomeCorrigido": "nome correto da medicação se tiver erro de grafia, senão igual ao nome original"
+}`
+    : `Você é um especialista em skincare. Responda APENAS com JSON, sem texto extra.
 
 Produto: "${nome}" da marca "${marca}"
 Categoria: ${categoria}
@@ -212,7 +228,12 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
     const res = await gerarDescricaoIA(form.nome, form.marca, form.categoria, form.areas, form.periodos, produtos)
     if (res) {
       setIaResult(res)
-      setForm(f => ({ ...f, descricao_ia: res.descricao, ordem: res.ordem }))
+      setForm(f => ({ 
+        ...f, 
+        descricao_ia: res.descricao, 
+        ordem: res.ordem,
+        nome: res.nomeCorrigido || f.nome
+      }))
     }
     setLoadingIA(false)
   }
