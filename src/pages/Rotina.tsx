@@ -42,8 +42,8 @@ const AREAS = [
   { id: 'rosto',  label: 'Rosto',  icon: `${SUPABASE}/icon-rosto.png`  },
   { id: 'colo',   label: 'Colo',   icon: `${SUPABASE}/icon-colo.png`   },
   { id: 'costas', label: 'Costas', icon: `${SUPABASE}/icon-costas.png` },
+  { id: 'oral',   label: 'Oral',   icon: `${SUPABASE}/icon-oral.png`   },
   { id: 'cabelo', label: 'Cabelo', icon: `${SUPABASE}/icon-cabelo.png` },
-  { id: 'pernas', label: 'Pernas', icon: `${SUPABASE}/icon-pernas.png` },
 ]
 
 function LoadingScreen() {
