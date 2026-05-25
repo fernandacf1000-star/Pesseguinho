@@ -717,7 +717,7 @@ export default function Rotina() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: '44px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+      <div style={{ padding: 'max(env(safe-area-inset-top), 8px) 20px 6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
         <button
           onClick={() => { localStorage.clear(); window.location.href = '/login' }}
           style={{
