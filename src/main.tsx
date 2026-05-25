@@ -11,6 +11,7 @@ import Rotina from './pages/Rotina'
 import Produtos from './pages/Produtos'
 import Evolucao from './pages/Evolucao'
 import Financas from './pages/Financas'
+import RelatorioMedico from './components/RelatorioMedico'
 
 const qc = new QueryClient()
 
@@ -41,6 +42,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout() {
+  const { authState } = useAuth()
+  const userId = authState.status === 'authenticated' ? authState.user?.id : undefined
+
   return (
     <>
       <style>{`
@@ -50,11 +54,12 @@ function AppLayout() {
       `}</style>
       <div style={{ paddingBottom: '90px' }}>
         <Routes>
-          <Route path="/"         element={<Rotina />} />
-          <Route path="/produtos" element={<Produtos />} />
-          <Route path="/evolucao" element={<Evolucao />} />
-          <Route path="/financas" element={<Financas />} />
-          <Route path="/analise"  element={<Placeholder label="Análise IA" />} />
+          <Route path="/"          element={<Rotina />} />
+          <Route path="/produtos"  element={<Produtos />} />
+          <Route path="/evolucao"  element={<Evolucao />} />
+          <Route path="/financas"  element={<Financas />} />
+          <Route path="/relatorio" element={<RelatorioMedico userId={userId} />} />
+          <Route path="/analise"   element={<Placeholder label="Análise IA" />} />
         </Routes>
       </div>
       <BottomNav />
