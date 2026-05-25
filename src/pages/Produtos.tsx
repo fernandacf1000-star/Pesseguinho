@@ -62,11 +62,9 @@ Medicação informada: "${nome}" fabricante/marca: "${marca}"
 
 Instruções:
 - O nome pode estar com grafia errada, ser manipulado, genérico ou nome comercial
-- Pode ser medicamento psiquiátrico (antidepressivo, estabilizador de humor, ansiolítico, antipsicótico, etc.)
-- Tente identificar pelo nome fonético ou aproximação — ex: "Vurtuoso" pode ser "Vortioxetina/Brintellix"
-- Se for manipulado ou não identificado com certeza, descreva pela classe farmacológica que o nome sugere
-- NUNCA retorne erro, "não reconhecido" ou recuse descrever — sempre forneça descrição útil e neutra
-- Seja conciso e clínico, sem julgamentos
+- Tente identificar pelo nome fonético ou aproximação
+- Se não identificado com certeza, descreva pela classe farmacológica que o nome sugere
+- NUNCA retorne erro ou recuse descrever — sempre forneça descrição útil e neutra
 
 Retorne exatamente este JSON:
 {
