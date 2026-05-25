@@ -13,9 +13,14 @@ const FASES = [
   { id: 'olhos',      label: 'Olhos',      cor: '#C5956A', categorias: ['Sérum Olhos','Creme Olhos'] },
   { id: 'reparo',     label: 'Reparo',     cor: '#9DC08B', categorias: ['Hidratante','Barreira/Reparador','Óleo Facial','Labial'] },
   { id: 'protecao',   label: 'Proteção',   cor: '#F4C842', categorias: ['Protetor Solar'] },
+  { id: 'medicamentos', label: 'Medicamentos', cor: '#8B7BA8', categorias: ['Oral'] },
 ]
 
-function getFase(categoria: string) {
+function getFase(categoria: string, areas?: string[]) {
+  // Se é medicação oral, retorna fase de medicamentos
+  if (areas?.includes('Oral')) {
+    return { label: 'Medicamentos', cor: '#8B7BA8', id: 'medicamentos' }
+  }
   return FASES.find(f => f.categorias.some(c => categoria?.toLowerCase().includes(c.toLowerCase()))) ?? { label: 'Outros', cor: C.muted }
 }
 
@@ -194,9 +199,18 @@ export default function Financas() {
 
   // Gasto por fase
   const gastoPorFase = FASES.map(fase => {
-    const total = comprasAno
-      .filter(c => c.produtos && fase.categorias.some(cat => c.produtos!.categoria?.toLowerCase().includes(cat.toLowerCase())))
-      .reduce((s, c) => s + c.preco, 0)
+    let total = 0
+    if (fase.id === 'medicamentos') {
+      // Para medicamentos, filtrar por área Oral
+      total = comprasAno
+        .filter(c => c.produtos && c.produtos.areas?.includes('Oral'))
+        .reduce((s, c) => s + c.preco, 0)
+    } else {
+      // Para fases de skincare, filtrar por categoria
+      total = comprasAno
+        .filter(c => c.produtos && fase.categorias.some(cat => c.produtos!.categoria?.toLowerCase().includes(cat.toLowerCase())))
+        .reduce((s, c) => s + c.preco, 0)
+    }
     return { ...fase, total }
   }).filter(f => f.total > 0).sort((a, b) => b.total - a.total)
 
@@ -336,7 +350,7 @@ export default function Financas() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {items.map(c => {
-                      const fase = getFase(c.produtos?.categoria ?? '')
+                      const fase = getFase(c.produtos?.categoria ?? '', c.produtos?.areas)
                       const custoPorMl = c.volume_ml ? c.preco / c.volume_ml : null
                       return (
                         <div key={c.id}
