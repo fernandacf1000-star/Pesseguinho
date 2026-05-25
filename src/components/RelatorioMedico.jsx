@@ -112,7 +112,7 @@ export default function RelatorioMedico({ userId }) {
     if (mostraDermatologico || mostraUsoContinuo) {
       filtered = produtos.filter(p => {
         const ehDerma = isDermatologico(p.categoria, p.areas);
-        const ehContinuo = isUsoContinuo(p.dias_da_semana);
+        const ehContinuo = isUsoContinuo(p.dias_da_semana) && p.areas?.includes("Oral");
 
         if (mostraDermatologico && mostraUsoContinuo) {
           return ehDerma || ehContinuo;
