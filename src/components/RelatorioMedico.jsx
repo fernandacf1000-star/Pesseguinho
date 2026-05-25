@@ -34,15 +34,31 @@ const AREA_ORDER = [
   "Oral / Suplementos",
 ];
 
-const isDermatologico = (cat) => {
-  if (!cat) return false;
-  const c = cat.toLowerCase();
-  return ["skincare", "limpeza", "hidratante", "protetor", "vitamina c", "retinoide", "esfoliante", "peeling", "clareador", "sérum", "creme", "niacinamida", "peptídeos", "barreira", "óleo", "labial", "shampoo"].some(k => c.includes(k));
+// Dermatológico = TÓPICO (aplicado na pele/cabelo)
+const isDermatologico = (categoria, areas) => {
+  if (!categoria) return false;
+  const c = categoria.toLowerCase();
+
+  // Categorias claramente TÓPICAS
+  const topicasExplicitas = [
+    "limpeza", "hidratante", "protetor solar", "protetor", "vitamina c",
+    "retinoide", "esfoliante", "peeling", "clareador", "sérum", "creme",
+    "niacinamida", "peptídeos", "barreira", "óleo", "labial", "shampoo",
+    "pielus", "differin", "vitanol", "retinal", "azelan"
+  ];
+
+  // Se a área é "Oral", NÃO é dermatológico tópico
+  if (areas && areas.includes("Oral")) return false;
+
+  // Verifica se bate em categorias tópicas
+  return topicasExplicitas.some(k => c.includes(k));
 };
 
+// Uso contínuo = todos os dias (dias_da_semana vazio ou ['Todos'])
 const isUsoContinuo = (dias) => {
-  if (!dias) return false;
-  return dias.length === 0 || dias.includes("Todos");
+  if (!dias || dias.length === 0) return true; // null/undefined = contínuo
+  if (dias.includes("Todos")) return true;
+  return false;
 };
 
 const formatPeriodos = (periodos) => {
@@ -92,9 +108,10 @@ export default function RelatorioMedico({ userId }) {
 
     let filtered = produtos;
 
+    // Aplicar filtros
     if (mostraDermatologico || mostraUsoContinuo) {
       filtered = produtos.filter(p => {
-        const ehDerma = isDermatologico(p.categoria);
+        const ehDerma = isDermatologico(p.categoria, p.areas);
         const ehContinuo = isUsoContinuo(p.dias_da_semana);
 
         if (mostraDermatologico && mostraUsoContinuo) {
