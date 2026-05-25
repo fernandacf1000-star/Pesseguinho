@@ -363,8 +363,8 @@ function ProductCard({ p, isChecked, onClick, peleSensivel }: {
         style={{
           display: 'flex', alignItems: 'center', gap: 12,
           background: C.card,
-          border: `1.5px solid ${isChecked ? C.green : C.border}`,
-          borderRadius: 16, padding: '12px 16px', cursor: 'pointer',
+          border: `1px solid ${isChecked ? C.green : C.border}`,
+          borderRadius: 12, padding: '8px 12px', cursor: 'pointer',
           transition: 'all 0.2s ease',
           opacity: isChecked ? 0.7 : (peleSensivel && altoRisco ? 0.6 : 1),
           transform: isChecked ? 'scale(0.98)' : 'scale(1)',
@@ -471,24 +471,24 @@ function PhotoAlertBanner({ onDismiss }: { onDismiss: () => void }) {
   const navigate = useNavigate()
   return (
     <div style={{
-      margin: '0 20px 16px',
+      margin: '0 20px 10px',
       background: `${C.peach}33`,
-      border: `1.5px solid ${C.peach}`,
-      borderRadius: 18, padding: '14px 16px',
-      display: 'flex', alignItems: 'flex-start', gap: 12,
+      border: `1px solid ${C.peach}`,
+      borderRadius: 14, padding: '10px 12px',
+      display: 'flex', alignItems: 'center', gap: 10,
     }}>
-      <span style={{ fontSize: 28, flexShrink: 0 }}>📸</span>
+      <span style={{ fontSize: 22, flexShrink: 0 }}>📸</span>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 4 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 2 }}>
           Dr. Pessê quer ver seu glow! ✨
         </div>
-        <div style={{ fontSize: 11, color: C.muted, marginBottom: 10 }}>
+        <div style={{ fontSize: 10, color: C.muted, marginBottom: 8 }}>
           Já faz 15 dias desde sua última foto.
         </div>
         <button
           onClick={() => navigate('/evolucao')}
           style={{
-            padding: '7px 16px', borderRadius: 12, border: 'none',
+            padding: '5px 12px', borderRadius: 10, border: 'none',
             background: C.deepPeach, color: 'white',
             fontSize: 11, fontWeight: 700, cursor: 'pointer',
           }}>
@@ -499,8 +499,7 @@ function PhotoAlertBanner({ onDismiss }: { onDismiss: () => void }) {
         onClick={onDismiss}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 16, color: C.muted, flexShrink: 0, lineHeight: 1,
-          padding: 0,
+          fontSize: 14, color: C.muted, flexShrink: 0, lineHeight: 1, padding: 0,
         }}>✕</button>
     </div>
   )
@@ -530,9 +529,9 @@ function WeeklyStrip({ dataAtiva, semanaOffset, onSelectData, onChangeSemana }: 
   const LETRAS = ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']
 
   return (
-    <div style={{ padding: '0 20px 12px' }}>
+    <div style={{ padding: '0 20px 8px' }}>
       {/* Navegação de semana */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <button onClick={() => onChangeSemana(semanaOffset - 1)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: C.muted, padding: '4px 8px' }}>‹</button>
         <span style={{ fontSize: 11, fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: 1 }}>
@@ -718,7 +717,7 @@ export default function Rotina() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap');`}</style>
 
       {/* Header */}
-      <div style={{ padding: '52px 20px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
+      <div style={{ padding: '44px 20px 8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative' }}>
         <button
           onClick={() => { localStorage.clear(); window.location.href = '/login' }}
           style={{
@@ -759,8 +758,8 @@ export default function Rotina() {
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <div style={{
-            width: 80, height: 80, borderRadius: '50%', background: 'white',
-            border: `2.5px solid ${C.peach}`,
+            width: 64, height: 64, borderRadius: '50%', background: 'white',
+            border: `2px solid ${C.peach}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 12px rgba(255,203,173,0.4)',
             position: 'relative', overflow: 'visible',
@@ -768,7 +767,7 @@ export default function Rotina() {
             <img
               src={periodo === 'manha' ? `${SUPABASE}/mascote-manha.png` : `${SUPABASE}/mascote-noite.png`}
               alt="Pesseguinho"
-              style={{ width: 110, height: 110, objectFit: 'contain', position: 'absolute' }}
+              style={{ width: 88, height: 88, objectFit: 'contain', position: 'absolute' }}
               onError={(e) => { (e.currentTarget as HTMLImageElement).src = `${SUPABASE}/mascote2.png` }}
             />
           </div>
