@@ -72,13 +72,17 @@ Retorne exatamente este JSON:
   "ordem": 1,
   "nomeCorrigido": "nome corrigido se houver erro de grafia óbvio, senão igual ao original"
 }`
-    : `Você é um especialista em skincare. Responda APENAS com JSON, sem texto extra.
+    : `Você é um especialista em produtos de saúde e beleza. Responda APENAS com JSON, sem texto extra.
 
 Produto: "${nome}" da marca "${marca}"
 Categoria: ${categoria}
 Áreas: ${areas.join(', ')}
 Períodos: ${periodos.join(', ')}
 Outros produtos na rotina: ${listaProdutos || 'nenhum'}
+
+Instruções:
+- Pode ser skincare, suplemento, vitamina, creme corporal ou qualquer produto de saúde/beleza
+- NUNCA recuse descrever — sempre forneça descrição útil
 
 Retorne exatamente este JSON:
 {
@@ -95,12 +99,12 @@ Retorne exatamente este JSON:
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          
         })
       }
     )
     const data = await res.json()
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text
+    if (!text) return null
     const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     return JSON.parse(clean)
   } catch {
