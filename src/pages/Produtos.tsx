@@ -273,42 +273,17 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
 
   const handleAutoLookup = async () => {
     if (!form.nome || form.areas.length === 0 || !form.areas.includes('Oral')) return
-    if (form.principio_ativo) return // já preenchido
+    if (form.principio_ativo) return
     
     setLoadingIA(true)
-    // Chama IA apenas para identificar o princípio ativo
-    const prompt = `Você é um especialista em farmacologia. Responda APENAS com JSON, sem texto extra.
-
-Nome comercial/medicação: "${form.nome}"
-
-Sua tarefa: identifique o princípio ativo desta medicação. Se não conseguir identificar com certeza, retorne null.
-
-Retorne exatamente este JSON:
-{
-  "principio_ativo": "nome do princípio ativo identificado, ou null se desconhecido"
-}`
-
     try {
-      const key = import.meta.env.VITE_GEMINI_API_KEY
-      if (!key) return
-
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-          })
-        }
-      )
-      const data = await res.json()
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text
-      if (!text) return
-      const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-      const parsed = JSON.parse(clean)
-      if (parsed.principio_ativo) {
-        setForm(f => ({ ...f, principio_ativo: parsed.principio_ativo }))
+      const lookup = MEDICAMENTOS_DB[form.nome.toLowerCase()]
+      if (lookup) {
+        setForm(f => ({
+          ...f,
+          principio_ativo: lookup.principio_ativo,
+          marca: lookup.marca
+        }))
       }
     } catch {
       // falha silenciosa
@@ -319,7 +294,7 @@ Retorne exatamente este JSON:
   const handleNomeChange = (value: string) => {
     setForm(f => ({ ...f, nome: value }))
     
-    // Lookup local no banco de dados
+    // Lookup local no banco de dados primeiro
     if (form.areas.includes('Oral') && value.trim()) {
       const lookup = MEDICAMENTOS_DB[value.toLowerCase()]
       if (lookup) {
@@ -328,7 +303,35 @@ Retorne exatamente este JSON:
           principio_ativo: lookup.principio_ativo,
           marca: lookup.marca
         }))
+        return
       }
+      
+      // Se não encontrar local, busca via Edge Function
+      buscarMedicamentoViaEdge(value)
+    }
+  }
+
+  async function buscarMedicamentoViaEdge(nome: string) {
+    try {
+      setLoadingIA(true)
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/buscar-medicamento?nome=${encodeURIComponent(nome)}`,
+        { method: 'GET' }
+      )
+      const data = await response.json()
+      
+      if (data.principio_ativo && data.marca) {
+        setForm(f => ({
+          ...f,
+          principio_ativo: data.principio_ativo,
+          marca: data.marca
+        }))
+      }
+    } catch (err) {
+      console.error('Erro ao buscar medicamento:', err)
+    } finally {
+      setLoadingIA(false)
     }
   }
 
