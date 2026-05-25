@@ -3,10 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom'
 const C = { peach: '#FFCBAD', deepPeach: '#FF8C61', muted: '#A89D98' }
 
 const TABS = [
-  { path: '/',         emoji: '🍑', label: 'Rotina'   },
-  { path: '/produtos', emoji: '🧴', label: 'Produtos'  },
-  { path: '/evolucao', emoji: '📸', label: 'Evolução'  },
-  { path: '/financas', emoji: '💰', label: 'Finanças'  },
+  { path: '/',          emoji: '🍑', label: 'Rotina'   },
+  { path: '/produtos',  emoji: '🧴', label: 'Produtos'  },
+  { path: '/evolucao',  emoji: '📸', label: 'Evolução'  },
+  { path: '/financas',  emoji: '💰', label: 'Finanças'  },
+  { path: '/relatorio', emoji: '🩺', label: 'Médico'    },
 ]
 
 export default function BottomNav() {
