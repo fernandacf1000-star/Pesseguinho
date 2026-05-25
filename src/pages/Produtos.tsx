@@ -18,7 +18,7 @@ const AREA_ICONS: Record<string, string> = {
   Rosto:  `${SUPABASE_URL}/icon-rosto.png`,
   Colo:   `${SUPABASE_URL}/icon-colo.png`,
   Costas: `${SUPABASE_URL}/icon-costas.png`,
-  Oral: '💊',
+  Oral: `${SUPABASE_URL}/icon-oral.png`,
   Cabelo: `${SUPABASE_URL}/icon-cabelo.png`,
 }
 
