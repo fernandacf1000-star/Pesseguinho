@@ -62,9 +62,10 @@ async function gerarDescricaoIA(nome: string, marca: string, categoria: string, 
 Nome comercial: "${nome}" | Fabricante: "${marca}"${principioAtivo ? ` | Princípio ativo: "${principioAtivo}"` : ''}
 
 Instruções:
-- Use o princípio ativo se fornecido para identificar a medicação com precisão
-- Se não houver princípio ativo, tente identificar pelo nome comercial
-- NUNCA retorne erro — sempre forneça descrição clínica útil e neutra
+- Se houver princípio ativo, use-o como base para descrever a medicação — ignore se o nome comercial é desconhecido
+- Se houver apenas nome comercial, tente identificar
+- Pode ser medicamento manipulado, marca regional, ou genérico — ainda assim forneça descrição útil
+- NUNCA recuse descrever ou retorne erro — sempre forneça indicação clínica baseada no que foi informado
 
 Retorne exatamente este JSON:
 {
