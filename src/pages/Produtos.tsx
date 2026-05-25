@@ -40,15 +40,16 @@ type Produto = {
   em_uso: boolean
   descricao_ia: string
   dias_da_semana: string[] | null
+  principio_ativo?: string
 }
 
 const EMPTY_PRODUTO = {
   nome: '', marca: '', categoria: '', areas: [] as string[],
   periodos: [] as string[], dias_da_semana: ['Todos'] as string[], ordem: 5, status: 'ativo',
-  em_uso: true, descricao_ia: '',
+  em_uso: true, descricao_ia: '', principio_ativo: '',
 }
 
-async function gerarDescricaoIA(nome: string, marca: string, categoria: string, areas: string[], periodos: string[], produtosExistentes: Produto[]) {
+async function gerarDescricaoIA(nome: string, marca: string, categoria: string, areas: string[], periodos: string[], produtosExistentes: Produto[], principioAtivo?: string) {
   const key = import.meta.env.VITE_GEMINI_API_KEY
   if (!key) return null
 
@@ -58,17 +59,16 @@ async function gerarDescricaoIA(nome: string, marca: string, categoria: string, 
   const prompt = isMedicacao
     ? `Você é um especialista em farmacologia. Responda APENAS com JSON, sem texto extra.
 
-Medicação informada: "${nome}" fabricante/marca: "${marca}"
+Nome comercial: "${nome}" | Fabricante: "${marca}"${principioAtivo ? ` | Princípio ativo: "${principioAtivo}"` : ''}
 
 Instruções:
-- O nome pode estar com grafia errada, ser manipulado, genérico ou nome comercial
-- Tente identificar pelo nome fonético ou aproximação
-- Se não identificado com certeza, descreva pela classe farmacológica que o nome sugere
-- NUNCA retorne erro ou recuse descrever — sempre forneça descrição útil e neutra
+- Use o princípio ativo se fornecido para identificar a medicação com precisão
+- Se não houver princípio ativo, tente identificar pelo nome comercial
+- NUNCA retorne erro — sempre forneça descrição clínica útil e neutra
 
 Retorne exatamente este JSON:
 {
-  "descricao": "descrição de 1-2 frases sobre a classe e indicação provável desta medicação",
+  "descricao": "descrição de 1-2 frases sobre indicação e mecanismo desta medicação",
   "ordem": 1,
   "nomeCorrigido": "nome corrigido se houver erro de grafia óbvio, senão igual ao original"
 }`
@@ -231,7 +231,7 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
   const handleIA = async () => {
     if (!form.nome) return
     setLoadingIA(true)
-    const res = await gerarDescricaoIA(form.nome, form.marca, form.categoria, form.areas, form.periodos, produtos)
+    const res = await gerarDescricaoIA(form.nome, form.marca, form.categoria, form.areas, form.periodos, produtos, form.principio_ativo)
     if (res) {
       setIaResult(res)
       setForm(f => ({ 
@@ -279,6 +279,25 @@ function FormProduto({ inicial, produtos, onSave, onClose }: {
             />
           </div>
         ))}
+
+        {/* Princípio Ativo — só para medicamentos orais */}
+        {form.areas.includes('Oral') && (
+          <div style={{ marginBottom: 12 }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 4, textTransform: 'uppercase' }}>
+              Princípio Ativo
+            </label>
+            <input
+              value={form.principio_ativo ?? ''}
+              onChange={e => setForm(f => ({ ...f, principio_ativo: e.target.value }))}
+              placeholder="Ex: Vortioxetina, Escitalopram, Minoxidil..."
+              style={{
+                width: '100%', padding: '10px 14px', borderRadius: 12, boxSizing: 'border-box',
+                border: `1.5px solid ${C.deepPeach}66`, fontSize: 13, color: C.text,
+                background: `${C.deepPeach}08`, outline: 'none',
+              }}
+            />
+          </div>
+        )}
 
         {/* Categoria */}
         <div style={{ marginBottom: 12 }}>
